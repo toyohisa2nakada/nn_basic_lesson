@@ -221,7 +221,10 @@
                 <div class="md:w-1/2">
                     <div id="graph-area-bottom"
                         class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
-                        <h2 class="text-xl font-semibold mb-3 text-gray-800">合成グラフ (G1 + G2)</h2>
+                        <div class="flex items-center justify-between w-full mb-3">
+                            <h2 class="text-xl font-semibold text-gray-800 m-0">合成グラフ (G1 + G2)</h2>
+                            <div class="text-sm text-gray-700"><span class="font-semibold">MSE:</span> <span id="mse-value">0.0000</span></div>
+                        </div>
 
                         <!-- 目標点設定 (移動・コンパクト化) -->
                         <div
@@ -476,6 +479,27 @@
             return { y1Data, y2Data, ySumData: ySumChartData };
         }
 
+        // 合成グラフと目標点の平均二乗誤差（MSE）を計算
+        function calculateMSE(params) {
+            if (!currentScatterPoints.length) return 0;
+
+            const totalSquaredError = currentScatterPoints.reduce((acc, point) => {
+                const predicted = func(point.x, params.w_in1, params.b1, params.w_out1)
+                    + func(point.x, params.w_in2, params.b2, params.w_out2);
+                const diff = predicted - point.y;
+                return acc + diff * diff;
+            }, 0);
+
+            return totalSquaredError / currentScatterPoints.length;
+        }
+
+        function updateMSEDisplay(params) {
+            const mseElement = document.getElementById('mse-value');
+            if (!mseElement) return;
+            const mse = calculateMSE(params);
+            mseElement.textContent = mse.toFixed(4);
+        }
+
         // Chart.jsの共通設定を取得する関数（範囲設定を動的に反映）
         function getCommonChartOptions(range) {
             return {
@@ -589,6 +613,8 @@
 
             // 制御のセットアップとイベントリスナーの設定
             setupControls();
+
+            updateMSEDisplay(params);
         }
 
         // グラフ全体を更新する関数
@@ -623,6 +649,8 @@
             // グラフを更新
             individualChart.update();
             sumChart.update();
+
+            updateMSEDisplay(params);
         }
 
         // スライダーと数値入力の双方向同期をセットアップする関数
@@ -711,6 +739,8 @@
                     sumChart.data.datasets[1].data = currentScatterPoints;
                     sumChart.update();
                 }
+
+                updateMSEDisplay(getParams());
             });
         }
 
