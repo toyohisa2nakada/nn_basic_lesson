@@ -418,11 +418,9 @@
 
         // パラメータ取得関数を修正し、グラフ範囲を取得するようにする
         function getRangeParams() {
-            // X軸範囲: デフォルト値を -1.5 と 2.5 
             const xMin = parseFloat(document.getElementById('x-min').value) || -1.5;
             const xMax = parseFloat(document.getElementById('x-max').value) || 2.5;
-            // Y軸範囲: デフォルト値を -3 と 3 に変更
-            const yMin = parseFloat(document.getElementById('y-min').value) || -3;
+            const yMin = parseFloat(document.getElementById('y-min').value) || -5;
             const yMax = parseFloat(document.getElementById('y-max').value) || 3;
 
             // X_minがX_maxより大きい場合は入れ替える（グラフが破綻しないように）
@@ -748,5 +746,6 @@
         window.onload = initCharts;
     </script>
 </body>
+
 
 </html>
