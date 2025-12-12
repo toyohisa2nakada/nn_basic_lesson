@@ -285,10 +285,10 @@
                                     <!-- Y軸範囲 (デフォルト値: -3, 3に変更) -->
                                     <div class="flex items-center">
                                         <span class="mr-1 font-medium">Y軸:</span>
-                                        <input type="number" id="y-min" value="-3" step="1"
+                                        <input type="number" id="y-min" value="-5" step="1"
                                             class="range-input text-center border border-gray-300 rounded p-1">
                                         <span class="mx-1">〜</span>
-                                        <input type="number" id="y-max" value="3" step="1"
+                                        <input type="number" id="y-max" value="4" step="1"
                                             class="range-input text-center border border-gray-300 rounded p-1">
                                     </div>
                                 </div>
@@ -421,7 +421,7 @@
             const xMin = parseFloat(document.getElementById('x-min').value) || -1.5;
             const xMax = parseFloat(document.getElementById('x-max').value) || 2.5;
             const yMin = parseFloat(document.getElementById('y-min').value) || -5;
-            const yMax = parseFloat(document.getElementById('y-max').value) || 3;
+            const yMax = parseFloat(document.getElementById('y-max').value) || 4;
 
             // X_minがX_maxより大きい場合は入れ替える（グラフが破綻しないように）
             return {
@@ -749,3 +749,4 @@
 
 
 </html>
+
