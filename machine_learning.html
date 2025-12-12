@@ -1,0 +1,189 @@
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1"></script>
+</head>
+
+<body>
+    <script>
+        // https://github.com/tensorflow/tfjs
+        // https://js.tensorflow.org/api/latest/
+        // https://js.tensorflow.org/api_vis/latest/
+        // https://codelabs.developers.google.com/codelabs/tfjs-training-regression/index.html?hl=ja#0
+
+        function createModel() {
+            const model = tf.sequential();
+            model.add(
+                tf.layers.dense({
+                    inputShape: [1],
+                    units: 2,
+                    useBias: true,
+                    activation: "tanh",
+                }),
+            );
+            model.add(tf.layers.dense({ units: 1, useBias: false }));
+            model.compile({
+                optimizer: tf.train.adam(0.05),
+                loss: tf.losses.meanSquaredError,
+                metrics: ["mse"],
+            });
+            return model;
+        }
+
+        async function getData(type) {
+            const data = {
+                原点通る直線: [
+                    [-1, -1],
+                    [0, 0],
+                    [1, 1],
+                    [2, 2],
+                ],
+                原点通る折れ線: [
+                    [-1, -2],
+                    [0, 0],
+                    [1, 2],
+                    [2, 1],
+                ],
+                原点通らない直線: [
+                    [-1, -2],
+                    [0, -1],
+                    [1, 0],
+                    [2, 1],
+                ],
+                原点通らない折れ線: [
+                    [-1, -3],
+                    [0, -1],
+                    [1, 1],
+                    [2, 0],
+                ],
+            }[type];
+
+            const series = {
+                x: data.map((e) => e[0]),
+                y: data.map((e) => e[1]),
+            };
+            return {
+                values: data.map((e) => ({ x: e[0], y: e[1] })),
+                ranges: {
+                    x: [Math.min(...series.x) - 0.5, Math.max(...series.x) + 0.5],
+                    y: [Math.min(...series.y) - 2.5, Math.max(...series.y) + 2.5],
+                },
+                tensors: {
+                    x: tf.tensor2d(series.x, [data.length, 1]),
+                    y: tf.tensor2d(series.y, [data.length, 1]),
+                },
+            };
+        }
+        function setupVisor({ onStart }) {
+            const visorElement = document.querySelector(".visor");
+            visorElement.style.width = "100%";
+            visorElement.style.left = "0";
+
+            [".visor-controls", ".visor-tabs"].forEach((e) => {
+                const elem = visorElement.querySelector(e);
+                elem.style.display = "none";
+            });
+
+            const learningPanelElem = tfvis.visor().surface({ name: "学習の制御" });
+            const button = document.createElement("button");
+            button.textContent = "学習開始";
+            button.addEventListener("click", onStart);
+            learningPanelElem.container.appendChild(button);
+        }
+        function updateScatterplot({ values, ranges }) {
+            tfvis.render.scatterplot(
+                { name: "Horsepower v MPG" },
+                { values /*: values/*, series: ["value"]*/ },
+                { xAxisDomain: ranges.x, yAxisDomain: ranges.y, height: 200 },
+            );
+        }
+        async function transform({ model, range, interval }) {
+            const x = [];
+            for (let i = 0; range[0] + interval * i < range[1]; i += 1) {
+                x.push(parseFloat((range[0] + interval * i).toFixed(10)));
+            }
+            const y = await model.predict(tf.tensor2d(x, [x.length, 1])).data();
+            return x.map((_, i) => ({ x: x[i], y: y[i] }));
+        }
+
+        async function run({ model, values, ranges, tensors }) {
+            const batchSize = tensors.x.shape[0];
+            const epochs = 50;
+
+            // // 仮の教師データテンソル（真の値）
+            // const yTrueTensor = tf.tensor(values.map((e) => e.y));
+            // // 予測値をテンソルとして取得
+            // const yPredTensor = model.predict(tensors.x).flatten();
+            // // テンソル演算でMSEを計算
+            // const mseTensor = tf.losses.meanSquaredError(yTrueTensor, yPredTensor);
+            // // 最終的なMSEの値を取得
+            // const tensorMseValue = mseTensor.dataSync()[0];
+            // // メモリ解放
+            // yTrueTensor.dispose();
+            // yPredTensor.dispose();
+            // mseTensor.dispose();
+            // console.log(`テンソル計算MSE: ${tensorMseValue}`);
+
+            const history = await model.fit(tensors.x, tensors.y, {
+                batchSize,
+                epochs,
+                shuffle: true,
+                callbacks: tfvis.show.fitCallbacks(
+                    { name: "Training Performance" },
+                    ["mse"],
+                    { height: 100, callbacks: ["onEpochEnd"] },
+                ),
+            });
+            const finalLoss = history.history.loss[history.history.loss.length - 1];
+            console.log(history.history.loss)
+            console.log(`最終エポックの損失値: ${finalLoss}`);
+            console.log("Done Training");
+            // console.log(await model.evaluate(tensors.x,tensors.y)[0].data())
+
+            //
+            //
+            // const y1 = await model.predict(tensors.x).data();
+            // const mse =
+            //   Array.from(y1)
+            //     .map((y, i) => Math.pow(y - values[i].y, 2))
+            //     .reduce((a, e) => a + e, 0) / y1.length;
+            // console.log("mse", mse);
+
+            // 2ニューロン、バイアスあり、出力1、バイアスなしの場合
+            // weights[0]: 中間層の重み 形状[1,2] 例[[0.1,-0.2]]
+            // weights[1]: 中間層のバイアス 形状[2] 例[-2,1]
+            // weights[2]: 出力層の重み 形状[2,1] 例[[1.2],[-0.1]]
+            const weights = model.getWeights();
+            for (let i = 0; i < weights.length; i += 1) {
+                const arr = await weights[i].array();
+                // console.log(i,arr)
+            }
+            const predicted = await transform({
+                model,
+                range: ranges.x,
+                interval: 0.1,
+            });
+            updateScatterplot({ values: [values, predicted], ranges });
+        }
+
+        async function setup() {
+            const { values, ranges, tensors } = await getData("原点通らない折れ線");
+            updateScatterplot({ values, ranges });
+
+            const model = createModel();
+            // tfvis.show.modelSummary({ name: "Model Summary" }, model);
+
+            setupVisor({
+                onStart: (function (params) {
+                    return function () {
+                        run(params);
+                    };
+                })({ model, values, ranges, tensors }),
+            });
+        }
+        document.addEventListener("DOMContentLoaded", setup);
+    </script>
+</body>
+
+</html>

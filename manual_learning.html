@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>関数グラフ合成ツール</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        /* Chart.jsのコンテナの高さを確保 */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            /* グラフ描画領域の固定高さ */
+            /* グラフの横幅を縮小 */
+            width: 100%;
+            max-width: 300px;
+        }
+
+        /* キャンバスがコンテナいっぱいに広がるように設定 */
+        canvas {
+            width: 100 !important;
+            height: 100 !important;
+        }
+
+        /* スライダのスタイリングを調整 */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #d1d5db;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 3px 0;
+            /* マージンをさらに削減 (6pxから3pxへ) */
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 数値入力フィールドのスタイル調整 */
+        input[type="number"] {
+            -moz-appearance: textfield;
+            /* Firefoxで矢印を非表示 */
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* 範囲設定フィールドの幅を調整 */
+        .range-input {
+            width: 50px;
+            /* さらに幅を縮小 */
+            font-size: 0.75rem;
+            /* テキストサイズをsmにする */
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen p-0 md:p-0 font-sans">
+
+    <div id="container" class="max-w-7xl mx-auto bg-white shadow-xl rounded-xl">
+        <h1 class="text-2xl font-bold py-2 px-6 text-indigo-700 border-b border-gray-200">
+            関数グラフ合成
+        </h1>
+
+        <!-- メインレイアウトコンテナ: 縦に2つのパネルを配置 -->
+        <div id="main-layout" class="flex flex-col p-6 gap-6">
+
+            <!-- === 上部パネル (個別グラフ & パラメータ設定) === -->
+            <div id="upper-panel" class="flex flex-col md:flex-row gap-6">
+
+                <!-- 左: 個別関数グラフエリア (w-1/2) -->
+                <div class="md:w-1/2">
+                    <div id="graph-area-top"
+                        class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
+                        <h2 class="text-xl font-semibold mb-3 text-gray-800">個別関数グラフ (G1 & G2)</h2>
+                        <div class="chart-container mx-auto md:mx-0">
+                            <canvas id="individual-graphs-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右: パラメータ設定エリア (w-1/2) -->
+                <div class="md:w-1/2">
+                    <div id="parameter-control"
+                        class="bg-white p-3 rounded-lg shadow-md border border-indigo-200 h-full">
+                        <h3 class="text-xl font-bold mb-3 text-indigo-600">パラメータ設定</h3>
+
+                        <!-- グラフ1 パラメータ -->
+                        <div class="func-params mb-3 p-2 border border-red-300 rounded-lg bg-red-50">
+                            <!-- 修正: グラフの式を $y = w2 \times \tanh(w1 \times x + b)$ に変更 -->
+                            <h4 class="text-base font-semibold mb-2 text-red-700">グラフ1: $y = w2 \times \tanh(w1 \times x
+                                + b)$</h4>
+
+                            <div class="flex gap-3">
+                                <!-- w1 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
+                                <div class="w-1/3 pr-1">
+                                    <label for="a1" class="text-xs font-medium text-gray-700 block">
+                                        <div class="flex items-center whitespace-nowrap">
+                                            <span class="flex-shrink">定数 w1:</span>
+                                            <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
+                                            <input type="number" id="a1-value" min="-10.0" max="10.0" step="0.001"
+                                                value="1.000"
+                                                class="font-bold text-red-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
+                                        </div>
+                                    </label>
+                                    <input type="range" id="a1" min="-10.0" max="10.0" step="0.001" value="1.0"
+                                        class="accent-red-500">
+                                </div>
+
+                                <!-- b スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
+                                <div class="w-1/3 pr-1">
+                                    <label for="b1" class="text-xs font-medium text-gray-700 block">
+                                        <div class="flex items-center whitespace-nowrap">
+                                            <span class="flex-shrink">定数 b:</span>
+                                            <!-- 初期値 0.000 -->
+                                            <input type="number" id="b1-value" min="-10.0" max="10.0" step="0.001"
+                                                value="0.000"
+                                                class="font-bold text-red-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
+                                        </div>
+                                    </label>
+                                    <!-- 初期値 0.0 -->
+                                    <input type="range" id="b1" min="-10.0" max="10.0" step="0.001" value="0.0"
+                                        class="accent-red-500">
+                                </div>
+
+                                <!-- w2 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
+                                <div class="w-1/3 pr-1">
+                                    <label for="c1" class="text-xs font-medium text-gray-700 block">
+                                        <div class="flex items-center whitespace-nowrap">
+                                            <span class="flex-shrink">定数 w2:</span>
+                                            <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
+                                            <input type="number" id="c1-value" min="-10.0" max="10.0" step="0.001"
+                                                value="1.000"
+                                                class="font-bold text-red-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
+                                        </div>
+                                    </label>
+                                    <input type="range" id="c1" min="-10.0" max="10.0" step="0.001" value="1.0"
+                                        class="accent-red-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- グラフ2 パラメータ -->
+                        <div class="func-params mb-4 p-2 border border-blue-300 rounded-lg bg-blue-50">
+                            <!-- 修正: グラフの式を $y = w2 \times \tanh(w1 \times x + b)$ に変更 -->
+                            <h4 class="text-base font-semibold mb-2 text-blue-700">グラフ2: $y = w2 \times \tanh(w1 \times
+                                x + b)$</h4>
+
+                            <div class="flex gap-3">
+                                <!-- w1 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
+                                <div class="w-1/3 pr-1">
+                                    <label for="a2" class="text-xs font-medium text-gray-700 block">
+                                        <div class="flex items-center whitespace-nowrap">
+                                            <span class="flex-shrink">定数 w1:</span>
+                                            <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
+                                            <input type="number" id="a2-value" min="-10.0" max="10.0" step="0.001"
+                                                value="1.000"
+                                                class="font-bold text-blue-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
+                                        </div>
+                                    </label>
+                                    <input type="range" id="a2" min="-10.0" max="10.0" step="0.001" value="1.0"
+                                        class="accent-blue-500">
+                                </div>
+
+                                <!-- b スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
+                                <div class="w-1/3 pr-1">
+                                    <label for="b2" class="text-xs font-medium text-gray-700 block">
+                                        <div class="flex items-center whitespace-nowrap">
+                                            <span class="flex-shrink">定数 b:</span>
+                                            <!-- 初期値 0.000 -->
+                                            <input type="number" id="b2-value" min="-10.0" max="10.0" step="0.001"
+                                                value="0.000"
+                                                class="font-bold text-blue-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
+                                        </div>
+                                    </label>
+                                    <!-- 初期値 0.0 -->
+                                    <input type="range" id="b2" min="-10.0" max="10.0" step="0.001" value="0.0"
+                                        class="accent-blue-500">
+                                </div>
+
+                                <!-- w2 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
+                                <div class="w-1/3 pr-1">
+                                    <label for="c2" class="text-xs font-medium text-gray-700 block">
+                                        <div class="flex items-center whitespace-nowrap">
+                                            <span class="flex-shrink">定数 w2:</span>
+                                            <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
+                                            <input type="number" id="c2-value" min="-10.0" max="10.0" step="0.001"
+                                                value="1.000"
+                                                class="font-bold text-blue-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
+                                        </div>
+                                    </label>
+                                    <input type="range" id="c2" min="-10.0" max="10.0" step="0.001" value="1.0"
+                                        class="accent-blue-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === 下部パネル (合成グラフ & 図形描画領域) === -->
+            <div id="lower-panel" class="flex flex-col md:flex-row gap-6">
+
+                <!-- 左: 合成グラフエリア (w-1/2) -->
+                <div class="md:w-1/2">
+                    <div id="graph-area-bottom"
+                        class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
+                        <h2 class="text-xl font-semibold mb-3 text-gray-800">合成グラフ (G1 + G2)</h2>
+
+                        <!-- 目標点設定 (移動・コンパクト化) -->
+                        <div
+                            class="target-settings mb-3 p-2 border border-purple-300 rounded-lg bg-white/90 shadow-sm text-xs w-full">
+                            <div class="flex items-center">
+                                <label for="target-select"
+                                    class="mr-2 font-medium text-purple-700 whitespace-nowrap">目標点データ:</label>
+                                <select id="target-select"
+                                    class="p-1 border border-purple-300 rounded text-xs bg-white focus:ring-purple-500 focus:border-purple-500">
+                                    <option value="0" selected>原点通る直線</option> <!-- 初期選択は「原点通る直線」 -->
+                                    <option value="1">原点通る折れ線</option>
+                                    <option value="2">原点通らない直線</option>
+                                    <option value="3">原点通らない折れ線</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 合成グラフのキャンバス -->
+                        <div class="chart-container mx-auto md:mx-0">
+                            <canvas id="sum-graph-canvas"></canvas>
+                        </div>
+
+                        <!-- グラフ範囲設定 (移動・展開) - グラフの下に配置 -->
+                        <div
+                            class="range-settings mt-3 p-2 border border-gray-300 rounded-lg bg-white/90 shadow-sm text-xs w-full">
+                            <!-- ヘッダーとボタンをflexで配置 -->
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-semibold text-gray-700 text-sm m-0">グラフ表示範囲設定</h4>
+                                <!-- 折りたたみ/展開ボタン -->
+                                <!-- ★変更: 初期状態は閉じている(aria-expanded="false") -->
+                                <button id="toggle-range-settings"
+                                    class="p-1 rounded-full text-gray-600 hover:bg-gray-200 transition"
+                                    aria-expanded="false" aria-controls="range-settings-content">
+                                    <!-- ★変更: viewBoxを修正 -->
+                                    <svg id="toggle-icon"
+                                        class="w-4 h-4 transform rotate-0 transition-transform duration-300" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- 範囲設定のコンテンツ。★変更: 初期状態は非表示 (hiddenクラスを追加) -->
+                            <div id="range-settings-content" class="hidden">
+                                <div class="flex flex-wrap justify-start gap-x-4 gap-y-2">
+
+                                    <!-- X軸範囲 (デフォルト値: -1.5, 2.5) -->
+                                    <div class="flex items-center">
+                                        <span class="mr-1 font-medium">X軸:</span>
+                                        <input type="number" id="x-min" value="-1.5" step="0.5"
+                                            class="range-input text-center border border-gray-300 rounded p-1">
+                                        <span class="mx-1">〜</span>
+                                        <input type="number" id="x-max" value="2.5" step="0.5"
+                                            class="range-input text-center border border-gray-300 rounded p-1">
+                                    </div>
+
+                                    <!-- Y軸範囲 (デフォルト値: -3, 3に変更) -->
+                                    <div class="flex items-center">
+                                        <span class="mr-1 font-medium">Y軸:</span>
+                                        <input type="number" id="y-min" value="-3" step="1"
+                                            class="range-input text-center border border-gray-300 rounded p-1">
+                                        <span class="mx-1">〜</span>
+                                        <input type="number" id="y-max" value="3" step="1"
+                                            class="range-input text-center border border-gray-300 rounded p-1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右: 図形描画領域 (Placeholder) (w-1/2) -->
+                <div class="md:w-1/2">
+                    <div id="drawing-area"
+                        class="relative bg-gray-100 p-4 rounded-lg shadow-inner w-full min-h-[250px] flex flex-col items-center justify-center border border-dashed border-gray-400"
+                        style="padding-bottom: 33.33%;">
+                        <!-- class="bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full min-h-[250px] flex flex-col items-center justify-center border border-dashed border-gray-400"> -->
+                        <!-- <h2 class="text-xl font-semibold text-gray-600">図形描画領域</h2>
+                        <p class="text-sm text-gray-500 mt-2">（現在は空白のプレースホルダーです）</p> -->
+                        <svg id="circleSvg" viewBox="0 0 300 100" class="absolute inset-0 w-full h-full"
+                            xmlns="http://www.w3.org/2000/svg">
+
+                            <!-- ===== 矢印の定義 (defs) ===== -->
+                            <defs>
+                                <!-- 矢印の先端（マーカー）を定義 -->
+                                <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5"
+                                    markerHeight="5" orient="auto-start-reverse">
+                                    <!-- 三角形の形状 -->
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" />
+                                </marker>
+                            </defs>
+
+                            <!-- ===== 矢印 (line) 要素 ===== -->
+                            <!-- 矢印の線の太さを、ラベルが目立ちやすいように1.0から0.8に微調整 -->
+
+                            <!-- 1. 左上 (50, 30) -> 中央上 (150, 30) -->
+                            <line x1="50" y1="30" x2="135.3" y2="30.94" stroke="#9ca3af" stroke-width="0.8"
+                                marker-end="url(#arrowhead)" />
+
+                            <!-- 2. 左上 (50, 30) -> 中央下 (150, 70) -->
+                            <line x1="50" y1="30" x2="135.3" y2="65.06" stroke="#9ca3af" stroke-width="0.8"
+                                marker-end="url(#arrowhead)" />
+
+                            <!-- 3. 左下 (50, 70) -> 中央上 (150, 30) -->
+                            <line x1="50" y1="70" x2="135.3" y2="34.94" stroke="#9ca3af" stroke-width="0.8"
+                                marker-end="url(#arrowhead)" />
+
+                            <!-- 4. 左下 (50, 70) -> 中央下 (150, 70) -->
+                            <line x1="50" y1="70" x2="135.3" y2="69.06" stroke="#9ca3af" stroke-width="0.8"
+                                marker-end="url(#arrowhead)" />
+
+                            <!-- 5. 中央上 (150, 30) から 右 (250, 50) へ -->
+                            <line x1="150" y1="30" x2="235.3" y2="47.06" stroke="#9ca3af" stroke-width="0.8"
+                                marker-end="url(#arrowhead)" />
+
+                            <!-- 6. 中央下 (150, 70) から 右 (250, 50) へ -->
+                            <line x1="150" y1="70" x2="235.3" y2="52.94" stroke="#9ca3af" stroke-width="0.8"
+                                marker-end="url(#arrowhead)" />
+
+                            <!-- ===== ラベル (text) 要素 - 矢印の上 ===== -->
+                            <text x="110" y="25" text-anchor="middle" font-size="6" fill="#4a4a4a">w1 </text>
+                            <text x="110" y="40" text-anchor="middle" font-size="6" fill="#4a4a4a">b </text>
+                            <text x="110" y="60" text-anchor="middle" font-size="6" fill="#4a4a4a">w1 </text>
+                            <text x="110" y="75" text-anchor="middle" font-size="6" fill="#4a4a4a">b </text>
+                            <text x="210" y="35" text-anchor="middle" font-size="6" fill="#4a4a4a">w2 </text>
+                            <text x="210" y="65" text-anchor="middle" font-size="6" fill="#4a4a4a">w2 </text>
+
+
+                            <!-- ===== 円 (circle) 要素 ===== -->
+
+                            <!-- 1. 左の領域 (x=50): 2個の円 -->
+                            <!-- 色: 薄い灰色 (#e5e5e5) -->
+                            <circle cx="50" cy="30" r="15" fill="#e5e5e5" stroke="#a3a3a3" stroke-width="1.5" />
+                            <circle cx="50" cy="70" r="10" fill="#e5e5e5" stroke="#a3a3a3" stroke-width="1.5" />
+
+                            <!-- 2. 中央の領域 (x=150): 2個の円 (R=15) -->
+                            <!-- 中央上の円 (薄い赤 R=15) -->
+                            <circle cx="150" cy="30" r="15" fill="#fecaca" stroke="#dc2626" stroke-width="1.5" />
+
+                            <!-- 中央下の円 (薄い青 R=15) -->
+                            <circle cx="150" cy="70" r="15" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5" />
+
+                            <!-- 3. 右の領域 (x=250): 1個の円を垂直中央に配置 (cy=50) -->
+                            <!-- 色: グリーン (#22c55e) -->
+                            <circle cx="250" cy="50" r="15" fill="#22c55e" stroke="#15803d" stroke-width="1.5" />
+
+                            <!-- ===== ラベル (text) 要素 - 円の中央 ===== -->
+                            <text x="50" y="32" text-anchor="middle" font-size="4" font-weight="bold"
+                                fill="#333">入力</text>
+                            <text x="50" y="72" text-anchor="middle" font-size="4" font-weight="bold"
+                                fill="#333">バイアス</text>
+
+                            <text x="150" y="32" text-anchor="middle" font-size="4" font-weight="bold" fill="#333">ニューロン
+                                1</text>
+                            <text x="150" y="72" text-anchor="middle" font-size="4" font-weight="bold" fill="#333">ニューロン
+                                2</text>
+
+                            <text x="250" y="52" text-anchor="middle" font-size="4" font-weight="bold"
+                                fill="#333">出力</text>
+                        </svg>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // グラフ描画の設定
+        const DATA_POINTS = 300;
+
+        // プロットする散布図データ（目標点データセット）
+        const TARGET_POINT_DATASETS = [
+            // 0: 原点通る直線
+            [[-1, -1], [0, 0], [1, 1], [2, 2]],
+            // 1: 原点通る折れ線
+            [[-1, -2], [0, 0], [1, 2], [2, 1]],
+            // 2: 原点通らない直線
+            [[-1, -2], [0, -1], [1, 0], [2, 1]],
+            // 3: 原点通らない折れ線
+            [[-1, -3], [0, -1], [1, 1], [2, 0]]
+        ];
+
+        // 選択された目標点データ (初期値は「原点通る直線」)
+        let currentScatterPoints = TARGET_POINT_DATASETS[0].map(p => ({ x: p[0], y: p[1] }));
+
+        // 目標点選択ドロップダウンのID
+        const TARGET_SELECT_ID = 'target-select';
+
+        // パラメータ取得関数を修正し、グラフ範囲を取得するようにする
+        function getRangeParams() {
+            // X軸範囲: デフォルト値を -1.5 と 2.5 
+            const xMin = parseFloat(document.getElementById('x-min').value) || -1.5;
+            const xMax = parseFloat(document.getElementById('x-max').value) || 2.5;
+            // Y軸範囲: デフォルト値を -3 と 3 に変更
+            const yMin = parseFloat(document.getElementById('y-min').value) || -3;
+            const yMax = parseFloat(document.getElementById('y-max').value) || 3;
+
+            // X_minがX_maxより大きい場合は入れ替える（グラフが破綻しないように）
+            return {
+                X_MIN: Math.min(xMin, xMax),
+                X_MAX: Math.max(xMin, xMax),
+                Y_MIN: Math.min(yMin, yMax),
+                Y_MAX: Math.max(yMin, yMax)
+            };
+        }
+
+        // グラフデータ生成のためのX座標データ
+        function generateXData(X_MIN, X_MAX) {
+            const xData = [];
+            const step = (X_MAX - X_MIN) / DATA_POINTS;
+            for (let i = 0; i < DATA_POINTS; i++) {
+                xData.push(X_MIN + i * step);
+            }
+            return xData;
+        }
+
+        // 関数の定義: y = w_out * tanh(w_in * x + b)
+        function func(x, w_in, b, w_out) {
+            return w_out * Math.tanh(w_in * x + b);
+        }
+
+        // パラメータの現在値を取得 (重みとバイアス)
+        function getParams() {
+            // 値を input type="number" のID (e.g., a1-value) から取得
+            return {
+                // グラフ1 (G1)
+                w_in1: parseFloat(document.getElementById('a1-value').value) || 0,
+                b1: parseFloat(document.getElementById('b1-value').value) || 0,
+                w_out1: parseFloat(document.getElementById('c1-value').value) || 0,
+                // グラフ2 (G2)
+                w_in2: parseFloat(document.getElementById('a2-value').value) || 0,
+                b2: parseFloat(document.getElementById('b2-value').value) || 0,
+                w_out2: parseFloat(document.getElementById('c2-value').value) || 0
+            };
+        }
+
+        // Y軸データを計算 (X軸データも依存するため引数に追加)
+        function generateYData(params, xData) {
+            // y = w2 * tanh(w1 * x + b) を計算
+            const y1Data = xData.map(x => func(x, params.w_in1, params.b1, params.w_out1));
+            const y2Data = xData.map(x => func(x, params.w_in2, params.b2, params.w_out2));
+
+            // 合成グラフ (y1 + y2)
+            const ySumData = y1Data.map((y1, i) => y1 + y2Data[i]);
+
+            // Chart.jsはX軸をラベルとして扱えないため、X-Yペアの形式に変換
+            const ySumChartData = xData.map((x, i) => ({ x: x, y: ySumData[i] }));
+
+            return { y1Data, y2Data, ySumData: ySumChartData };
+        }
+
+        // Chart.jsの共通設定を取得する関数（範囲設定を動的に反映）
+        function getCommonChartOptions(range) {
+            return {
+                animation: false,
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        min: range.X_MIN,
+                        max: range.X_MAX,
+                        title: { display: true, text: 'x' },
+                        // X軸のティックを調整（0.1単位で表示）
+                        ticks: { callback: (val) => val.toFixed(1) }
+                    },
+                    y: {
+                        min: range.Y_MIN,
+                        max: range.Y_MAX,
+                        title: { display: true, text: 'y' }
+                    }
+                },
+                plugins: {
+                    legend: { display: true },
+                    tooltip: { enabled: false }
+                },
+                elements: {
+                    point: { radius: 0 }
+                }
+            };
+        }
+
+        // グラフの初期化と更新
+        let individualChart;
+        let sumChart;
+
+        function initCharts() {
+            const range = getRangeParams();
+            const xData = generateXData(range.X_MIN, range.X_MAX);
+            const params = getParams();
+            // 合成グラフのデータ形式をX-Yペアに修正
+            const { y1Data, y2Data, ySumData } = generateYData(params, xData);
+            const commonOptions = getCommonChartOptions(range);
+
+            // Chart.jsではLine Chartのデータラベル（xData）とデータポイントのインデックスが紐づくため、
+            // 個別グラフはこれまで通りの配列形式を維持
+            const y1Only = y1Data.map(d => d);
+            const y2Only = y2Data.map(d => d);
+
+
+            // 上部の個別グラフ
+            const ctxIndividual = document.getElementById('individual-graphs-canvas').getContext('2d');
+            individualChart = new Chart(ctxIndividual, {
+                type: 'line',
+                data: {
+                    labels: xData.map(x => x.toFixed(2)), // X軸ラベルは表示用に固定
+                    datasets: [
+                        {
+                            label: 'グラフ1 (G1)',
+                            data: y1Only, // Y値の配列
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            tension: 0.2,
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {
+                            label: 'グラフ2 (G2)',
+                            data: y2Only, // Y値の配列
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            tension: 0.2,
+                            borderWidth: 2,
+                            fill: false
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // 下部の合成グラフ
+            const ctxSum = document.getElementById('sum-graph-canvas').getContext('2d');
+            sumChart = new Chart(ctxSum, {
+                type: 'line', // 合成関数はLine Chart
+                data: {
+                    // 合成関数のLine Chartデータセット
+                    datasets: [
+                        {
+                            label: '合成グラフ (G1 + G2)',
+                            data: ySumData, // {x: X, y: Y} の配列
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 3,
+                            tension: 0.2,
+                            fill: false,
+                            // Line Chartでもx-y形式のデータを扱うために'x'の型を指定
+                            parsing: false,
+                        },
+                        // Scatterプロットのデータセット
+                        {
+                            label: '目標点 (Target Points)',
+                            data: currentScatterPoints, // 動的に更新される変数を使用
+                            type: 'scatter', // 散布図として描画
+                            backgroundColor: 'rgba(255, 165, 0, 1)', // オレンジ色
+                            pointRadius: 6, // 点のサイズ
+                            pointBorderWidth: 1,
+                            pointBorderColor: '#fff',
+                            showLine: false, // 線は描画しない
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // 制御のセットアップとイベントリスナーの設定
+            setupControls();
+        }
+
+        // グラフ全体を更新する関数
+        function updateCharts() {
+            const range = getRangeParams();
+            const xData = generateXData(range.X_MIN, range.X_MAX);
+            const params = getParams();
+            const { y1Data, y2Data, ySumData } = generateYData(params, xData);
+
+            // X軸データの更新と再計算が必要なため、グラフデータをすべて更新
+
+            // Individual Chart (Line Chart): labelsとy-value配列で更新
+            individualChart.data.labels = xData.map(x => x.toFixed(2));
+            individualChart.data.datasets[0].data = y1Data.map(d => d);
+            individualChart.data.datasets[1].data = y2Data.map(d => d);
+
+            // Sum Chart (Line + Scatter): x-yペアで更新
+            sumChart.data.datasets[0].data = ySumData;
+            // Scatterデータ (目標点) は currentScatterPoints を参照しているため、別途更新する必要はない
+
+            // 範囲の更新 (両方のグラフに適用)
+            const updateScales = (chart) => {
+                chart.options.scales.x.min = range.X_MIN;
+                chart.options.scales.x.max = range.X_MAX;
+                chart.options.scales.y.min = range.Y_MIN;
+                chart.options.scales.y.max = range.Y_MAX;
+            };
+
+            updateScales(individualChart);
+            updateScales(sumChart);
+
+            // グラフを更新
+            individualChart.update();
+            sumChart.update();
+        }
+
+        // スライダーと数値入力の双方向同期をセットアップする関数
+        const paramIds = ['a1', 'b1', 'c1', 'a2', 'b2', 'c2'];
+        const rangeIds = ['x-min', 'x-max', 'y-min', 'y-max'];
+
+        function setupControls() {
+            // 1. 重みとバイアス (スライダー/数値入力) の設定
+            paramIds.forEach(id => {
+                const rangeInput = document.getElementById(id);           // スライダー (e.g., 'a1')
+                const numberInput = document.getElementById(`${id}-value`); // 数値入力 (e.g., 'a1-value')
+
+                if (!numberInput || !rangeInput) return;
+
+                // スライダー操作時
+                rangeInput.addEventListener('input', () => {
+                    numberInput.value = parseFloat(rangeInput.value).toFixed(3);
+                    updateCharts();
+                });
+
+                // 数値入力変更時
+                numberInput.addEventListener('change', () => {
+                    let val = parseFloat(numberInput.value);
+                    const min = parseFloat(numberInput.min);
+                    const max = parseFloat(numberInput.max);
+
+                    if (isNaN(val)) val = 0.0;
+                    // 値が範囲外の場合はクリップ処理を行う
+                    if (val < min) val = min;
+                    if (val > max) val = max;
+
+                    // toFixed(3)で丸め、UIに表示
+                    numberInput.value = val.toFixed(3);
+                    rangeInput.value = val.toFixed(3); // スライダーの値も同期
+
+                    updateCharts();
+                });
+
+                // 初期値の同期
+                numberInput.value = parseFloat(rangeInput.value).toFixed(3);
+            });
+
+            // 2. グラフ範囲設定のイベントリスナー
+            rangeIds.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('change', () => {
+                        updateCharts();
+                    });
+                }
+            });
+
+            // 3. 範囲設定パネルの折りたたみ機能
+            const toggleButton = document.getElementById('toggle-range-settings');
+            const contentDiv = document.getElementById('range-settings-content');
+            const toggleIcon = document.getElementById('toggle-icon');
+
+            toggleButton.addEventListener('click', () => {
+                // aria-expanded属性で現在の状態をチェック
+                const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+
+                if (isExpanded) {
+                    // 閉じる
+                    contentDiv.classList.add('hidden');
+                    toggleIcon.style.transform = 'rotate(0deg)'; // 元に戻す
+                    toggleButton.setAttribute('aria-expanded', 'false');
+                } else {
+                    // 開く
+                    contentDiv.classList.remove('hidden');
+                    toggleIcon.style.transform = 'rotate(90deg)'; // 90度回転させて下向きにする
+                    toggleButton.setAttribute('aria-expanded', 'true');
+                }
+            });
+
+            // 4. 目標点選択ドロップダウンのイベントリスナー
+            const targetSelect = document.getElementById(TARGET_SELECT_ID);
+            targetSelect.addEventListener('change', () => {
+                const selectedIndex = parseInt(targetSelect.value, 10);
+
+                // 新しい目標点データを選択し、Chart.jsが期待する {x, y} 形式に変換
+                const newRawData = TARGET_POINT_DATASETS[selectedIndex];
+                currentScatterPoints = newRawData.map(p => ({ x: p[0], y: p[1] }));
+
+                // 合成グラフのデータセット (インデックス1が目標点) を更新
+                if (sumChart && sumChart.data.datasets.length > 1) {
+                    sumChart.data.datasets[1].data = currentScatterPoints;
+                    sumChart.update();
+                }
+            });
+        }
+
+        // ページロード時にグラフを初期化
+        window.onload = initCharts;
+    </script>
+</body>
+
+</html>
