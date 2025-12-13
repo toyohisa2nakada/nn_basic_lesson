@@ -10,12 +10,27 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
+        :root {
+            --bg-deep: #0a1224;
+            --bg-panel: #0f172a;
+            --bg-surface: #0b1930;
+            --bg-accent-red: rgba(248, 113, 113, 0.12);
+            --bg-accent-blue: rgba(56, 189, 248, 0.12);
+            --bg-card: #111827;
+            --border: #1f2a44;
+            --muted: #94a3b8;
+            --text: #e2e8f0;
+            --accent: #7c3aed;
+            --accent-amber: #f59e0b;
+            --accent-cyan: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-yellow: #facc15;
+        }
+
         /* Chart.jsのコンテナの高さを確保 */
         .chart-container {
             position: relative;
             height: 200px;
-            /* グラフ描画領域の固定高さ */
-            /* グラフの横幅を縮小 */
             width: 100%;
             max-width: 300px;
         }
@@ -26,16 +41,69 @@
             height: 100 !important;
         }
 
+        body {
+            background: radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.08), transparent 25%),
+                radial-gradient(circle at 80% 10%, rgba(56, 189, 248, 0.08), transparent 22%),
+                radial-gradient(circle at 70% 70%, rgba(34, 197, 94, 0.08), transparent 25%),
+                var(--bg-deep);
+            color: var(--text);
+        }
+
+        #container {
+            background: linear-gradient(145deg, #0f172a, #0b1422);
+            color: var(--text);
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+
+        h1 {
+            color: #c7d2fe;
+        }
+
+        #graph-area-top,
+        #graph-area-bottom,
+        #drawing-area {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        }
+
+        #parameter-control {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .func-params {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .func-params:first-of-type {
+            background: var(--bg-accent-red);
+            border-color: rgba(248, 113, 113, 0.35);
+        }
+
+        .func-params:last-of-type {
+            background: var(--bg-accent-blue);
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+
+        .target-settings,
+        .range-settings {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
         /* スライダのスタイリングを調整 */
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
             height: 6px;
-            background: #d1d5db;
-            border-radius: 3px;
+            background: #1f2937;
+            border-radius: 9999px;
             cursor: pointer;
             margin: 3px 0;
-            /* マージンをさらに削減 (6pxから3pxへ) */
         }
 
         input[type="range"]::-webkit-slider-thumb {
@@ -44,15 +112,34 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: #4f46e5;
+            background: linear-gradient(135deg, var(--accent), #3b82f6);
             cursor: pointer;
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #3b82f6);
+            border: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
 
         /* 数値入力フィールドのスタイル調整 */
-        input[type="number"] {
+        input[type="number"],
+        select {
             -moz-appearance: textfield;
-            /* Firefoxで矢印を非表示 */
+            background: #0d162d;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
+            outline: none;
         }
 
         input[type="number"]::-webkit-inner-spin-button,
@@ -64,17 +151,36 @@
         /* 範囲設定フィールドの幅を調整 */
         .range-input {
             width: 50px;
-            /* さらに幅を縮小 */
             font-size: 0.75rem;
-            /* テキストサイズをsmにする */
+            background: #0d162d;
+            color: var(--text);
+        }
+
+        /* テキスト色の統一 */
+        .text-gray-800,
+        .text-gray-700,
+        .text-gray-600 {
+            color: var(--text) !important;
+        }
+
+        .text-indigo-700 {
+            color: #c7d2fe !important;
+        }
+
+        .text-red-700 {
+            color: #fca5a5 !important;
+        }
+
+        .text-blue-700 {
+            color: #93c5fd !important;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen p-0 md:p-0 font-sans">
+<body class="min-h-screen p-0 md:p-0 font-sans text-slate-100">
 
-    <div id="container" class="max-w-7xl mx-auto bg-white shadow-xl rounded-xl">
-        <h1 class="text-2xl font-bold py-2 px-6 text-indigo-700 border-b border-gray-200">
+    <div id="container" class="max-w-7xl mx-auto shadow-2xl rounded-xl border border-slate-800/80">
+        <h1 class="text-2xl font-bold py-2 px-6 text-indigo-700 border-b border-slate-800/60">
             パラメータを変更して、合成グラフが教師データを通るようにする
         </h1>
 
@@ -98,7 +204,7 @@
                 <!-- 右: パラメータ設定エリア (w-1/2) -->
                 <div class="md:w-1/2">
                     <div id="parameter-control"
-                        class="bg-white p-3 rounded-lg shadow-xl ring-4 ring-offset-2 ring-indigo-400 h-full">
+                        class="p-3 rounded-lg shadow-xl ring-4 ring-offset-2 ring-indigo-400/30 ring-offset-transparent h-full">
                         <h3 class="text-base font-bold mb-3 text-indigo-700">パラメータ設定</h3>
 
                         <!-- グラフ1 パラメータ -->
@@ -300,7 +406,7 @@
                 <!-- 右: 図形描画領域 (Placeholder) (w-1/2) -->
                 <div class="md:w-1/2">
                     <div id="drawing-area"
-                        class="relative bg-gray-100 p-4 rounded-lg shadow-inner w-full min-h-[250px] flex flex-col items-center justify-center border border-dashed border-gray-400 space-y-4">
+                        class="relative bg-gray-100 p-4 rounded-lg shadow-inner w-full min-h-[250px] flex flex-col items-center justify-center border border-dashed border-slate-600 space-y-4">
                         <!-- style="padding-bottom: 33.33%;" -->
                         <div>
                             <h2 class="text-base font-semibold text-gray-800 m-0">ニューラルネットワークの構造</h2>
@@ -316,7 +422,7 @@
                                 <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5"
                                     markerHeight="5" orient="auto-start-reverse">
                                     <!-- 三角形の形状 -->
-                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af" />
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#7dd3fc" />
                                 </marker>
                             </defs>
 
@@ -324,68 +430,68 @@
                             <!-- 矢印の線の太さを、ラベルが目立ちやすいように1.0から0.8に微調整 -->
 
                             <!-- 1. 左上 (50, 30) -> 中央上 (150, 30) -->
-                            <line x1="50" y1="30" x2="130.3" y2="26.94" stroke="#9ca3af" stroke-width="0.8"
+                            <line x1="50" y1="30" x2="130.3" y2="26.94" stroke="#7dd3fc" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 2. 左上 (50, 30) -> 中央下 (150, 70) -->
-                            <line x1="50" y1="30" x2="130.3" y2="70.06" stroke="#9ca3af" stroke-width="0.8"
+                            <line x1="50" y1="30" x2="130.3" y2="70.06" stroke="#7dd3fc" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 3. 左下 (50, 70) -> 中央上 (150, 30) -->
-                            <line x1="50" y1="70" x2="130.3" y2="29.94" stroke="#9ca3af" stroke-width="0.8"
+                            <line x1="50" y1="70" x2="130.3" y2="29.94" stroke="#7dd3fc" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 4. 左下 (50, 70) -> 中央下 (150, 70) -->
-                            <line x1="50" y1="70" x2="130.3" y2="74.06" stroke="#9ca3af" stroke-width="0.8"
+                            <line x1="50" y1="70" x2="130.3" y2="74.06" stroke="#7dd3fc" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 5. 中央上 (150, 30) から 右 (250, 50) へ -->
-                            <line x1="150" y1="30" x2="235.3" y2="47.06" stroke="#9ca3af" stroke-width="0.8"
+                            <line x1="150" y1="30" x2="235.3" y2="47.06" stroke="#7dd3fc" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 6. 中央下 (150, 70) から 右 (250, 50) へ -->
-                            <line x1="150" y1="70" x2="235.3" y2="52.94" stroke="#9ca3af" stroke-width="0.8"
+                            <line x1="150" y1="70" x2="235.3" y2="52.94" stroke="#7dd3fc" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- ===== ラベル (text) 要素 - 矢印の上 ===== -->
-                            <text x="110" y="25" text-anchor="middle" font-size="6" fill="#4a4a4a">w1 </text>
-                            <text x="110" y="38" text-anchor="middle" font-size="6" fill="#4a4a4a">b </text>
-                            <text x="110" y="57" text-anchor="middle" font-size="6" fill="#4a4a4a">w1 </text>
-                            <text x="110" y="72" text-anchor="middle" font-size="6" fill="#4a4a4a">b </text>
-                            <text x="210" y="35" text-anchor="middle" font-size="6" fill="#4a4a4a">w2 </text>
-                            <text x="210" y="65" text-anchor="middle" font-size="6" fill="#4a4a4a">w2 </text>
+                            <text x="110" y="25" text-anchor="middle" font-size="6" fill="#cbd5e1">w1 </text>
+                            <text x="110" y="38" text-anchor="middle" font-size="6" fill="#cbd5e1">b </text>
+                            <text x="110" y="57" text-anchor="middle" font-size="6" fill="#cbd5e1">w1 </text>
+                            <text x="110" y="72" text-anchor="middle" font-size="6" fill="#cbd5e1">b </text>
+                            <text x="210" y="35" text-anchor="middle" font-size="6" fill="#cbd5e1">w2 </text>
+                            <text x="210" y="65" text-anchor="middle" font-size="6" fill="#cbd5e1">w2 </text>
 
 
                             <!-- ===== 円 (circle) 要素 ===== -->
 
                             <!-- 1. 左の領域 (x=50): 2個の円 -->
                             <!-- 色: 薄い灰色 (#e5e5e5) -->
-                            <circle cx="50" cy="30" r="15" fill="#e5e5e5" stroke="#a3a3a3" stroke-width="1.5" />
-                            <circle cx="50" cy="70" r="10" fill="#e5e5e5" stroke="#a3a3a3" stroke-width="1.5" />
+                            <circle cx="50" cy="30" r="15" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+                            <circle cx="50" cy="70" r="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
 
                             <!-- 2. 中央の領域 (x=150): 2個の円 (R=15) -->
                             <!-- 中央上の円 (薄い赤 R=15) -->
-                            <circle cx="150" cy="25" r="20" fill="#fecaca" stroke="#dc2626" stroke-width="1.5" />
+                            <circle cx="150" cy="25" r="20" fill="#291221" stroke="#f472b6" stroke-width="1.5" />
 
                             <!-- 中央下の円 (薄い青 R=15) -->
-                            <circle cx="150" cy="75" r="20" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5" />
+                            <circle cx="150" cy="75" r="20" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
 
                             <!-- 3. 右の領域 (x=250): 1個の円を垂直中央に配置 (cy=50) -->
                             <!-- 色: グリーン (#22c55e) -->
-                            <circle cx="250" cy="50" r="15" fill="#22c55e" stroke="#15803d" stroke-width="1.5" />
+                            <circle cx="250" cy="50" r="15" fill="#065f46" stroke="#22c55e" stroke-width="1.5" />
 
                             <!-- ===== ラベル (text) 要素 - 円の中央 ===== -->
-                            <text x="50" y="32" text-anchor="middle" font-size="8" font-weight="bold" fill="#333">入力
+                            <text x="50" y="32" text-anchor="middle" font-size="8" font-weight="bold" fill="#e2e8f0">入力
                                 x</text>
                             <text x="50" y="72" text-anchor="middle" font-size="8" font-weight="bold"
-                                fill="#333">バイアス</text>
+                                fill="#e2e8f0">バイアス</text>
 
-                            <text x="150" y="27" text-anchor="middle" font-size="8" font-weight="bold" fill="#333">ニューロン
+                            <text x="150" y="27" text-anchor="middle" font-size="8" font-weight="bold" fill="#e2e8f0">ニューロン
                                 1</text>
-                            <text x="150" y="77" text-anchor="middle" font-size="8" font-weight="bold" fill="#333">ニューロン
+                            <text x="150" y="77" text-anchor="middle" font-size="8" font-weight="bold" fill="#e2e8f0">ニューロン
                                 2</text>
 
-                            <text x="250" y="52" text-anchor="middle" font-size="8" font-weight="bold" fill="#333">出力
+                            <text x="250" y="52" text-anchor="middle" font-size="8" font-weight="bold" fill="#e2e8f0">出力
                                 y</text>
                         </svg>
                         <div>
@@ -523,18 +629,21 @@
                         position: 'bottom',
                         min: range.X_MIN,
                         max: range.X_MAX,
-                        title: { display: true, text: 'x' },
+                        title: { display: true, text: 'x', color: '#cbd5e1' },
                         // X軸のティックを調整（0.1単位で表示）
-                        ticks: { callback: (val) => val.toFixed(1) }
+                        ticks: { callback: (val) => val.toFixed(1), color: '#cbd5e1' },
+                        grid: { color: 'rgba(148, 163, 184, 0.25)' }
                     },
                     y: {
                         min: range.Y_MIN,
                         max: range.Y_MAX,
-                        title: { display: true, text: 'y' }
+                        title: { display: true, text: 'y', color: '#cbd5e1' },
+                        ticks: { color: '#cbd5e1' },
+                        grid: { color: 'rgba(148, 163, 184, 0.25)' }
                     }
                 },
                 plugins: {
-                    legend: { display: true },
+                    legend: { display: true, labels: { color: '#e2e8f0' } },
                     tooltip: { enabled: false }
                 },
                 elements: {
@@ -571,7 +680,7 @@
                         {
                             label: 'グラフ1 (G1)',
                             data: y1Only, // Y値の配列
-                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderColor: '#f59e0b',
                             tension: 0.2,
                             borderWidth: 2,
                             fill: false
@@ -579,7 +688,7 @@
                         {
                             label: 'グラフ2 (G2)',
                             data: y2Only, // Y値の配列
-                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderColor: '#38bdf8',
                             tension: 0.2,
                             borderWidth: 2,
                             fill: false
@@ -599,7 +708,7 @@
                         {
                             label: '合成グラフ (G1 + G2)',
                             data: ySumData, // {x: X, y: Y} の配列
-                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderColor: '#22c55e',
                             borderWidth: 3,
                             tension: 0.2,
                             fill: false,
@@ -611,10 +720,10 @@
                             label: '教師データ',
                             data: currentScatterPoints, // 動的に更新される変数を使用
                             type: 'scatter', // 散布図として描画
-                            backgroundColor: 'rgba(255, 165, 0, 1)', // オレンジ色
-                            pointRadius: 6, // 点のサイズ
+                            backgroundColor: '#facc15', // オレンジ色
+                            pointRadius: 7, // 点のサイズ
                             pointBorderWidth: 1,
-                            pointBorderColor: '#fff',
+                            pointBorderColor: '#0f172a',
                             showLine: false, // 線は描画しない
                         }
                     ]
