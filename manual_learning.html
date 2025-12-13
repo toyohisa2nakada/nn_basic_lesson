@@ -56,9 +56,9 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
         }
 
-        h1 {
+        /* h1 {
             color: #c7d2fe;
-        }
+        } */
 
         #graph-area-top,
         #graph-area-bottom,
@@ -97,10 +97,10 @@
 
         /* スライダのスタイリングを調整 */
         input[type="range"] {
-            -webkit-appearance: none;
+            /* -webkit-appearance: none;
+            background: #1f2937; */
             width: 100%;
             height: 6px;
-            background: #1f2937;
             border-radius: 9999px;
             cursor: pointer;
             margin: 3px 0;
@@ -180,7 +180,7 @@
 <body class="min-h-screen p-0 md:p-0 font-sans text-slate-100">
 
     <div id="container" class="max-w-7xl mx-auto shadow-2xl rounded-xl border border-slate-800/80">
-        <h1 class="text-2xl font-bold py-2 px-6 text-indigo-700 border-b border-slate-800/60">
+        <h1 class="text-gray-800 text-2xl font-bold py-2 px-6 border-b border-slate-800/60">
             パラメータを変更して、合成グラフが教師データを通るようにする
         </h1>
 
@@ -205,12 +205,12 @@
                 <div class="md:w-1/2">
                     <div id="parameter-control"
                         class="p-3 rounded-lg shadow-xl ring-4 ring-offset-2 ring-indigo-400/30 ring-offset-transparent h-full">
-                        <h3 class="text-base font-bold mb-3 text-indigo-700">パラメータ設定</h3>
+                        <h3 class="text-gray-800 text-base font-bold mb-3">パラメータ設定</h3>
 
                         <!-- グラフ1 パラメータ -->
                         <div class="func-params mb-3 p-2 border border-red-300 rounded-lg bg-red-50">
                             <!-- 修正: グラフの式を $y = w2 \times \tanh(w1 \times x + b)$ に変更 -->
-                            <h4 class="text-base font-semibold mb-2 text-red-700">グラフ1: y = w2 * tanh(w1 * x + b)</h4>
+                            <h3 class="text-base font-semibold mb-2 text-pink-400">グラフ1: <span class="text-gray-800">y = w2 * tanh(w1 * x + b)</span></h3>
 
                             <div class="flex gap-3">
                                 <!-- w1 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
@@ -225,7 +225,7 @@
                                         </div>
                                     </label>
                                     <input type="range" id="a1" min="-10.0" max="10.0" step="0.001" value="1.0"
-                                        class="accent-red-500">
+                                        class="accent-pink-400">
                                 </div>
 
                                 <!-- b スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
@@ -241,7 +241,7 @@
                                     </label>
                                     <!-- 初期値 0.0 -->
                                     <input type="range" id="b1" min="-10.0" max="10.0" step="0.001" value="0.0"
-                                        class="accent-red-500">
+                                        class="accent-pink-400">
                                 </div>
 
                                 <!-- w2 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
@@ -256,7 +256,7 @@
                                         </div>
                                     </label>
                                     <input type="range" id="c1" min="-10.0" max="10.0" step="0.001" value="1.0"
-                                        class="accent-red-500">
+                                        class="accent-pink-400">
                                 </div>
                             </div>
                         </div>
@@ -264,7 +264,7 @@
                         <!-- グラフ2 パラメータ -->
                         <div class="func-params mb-4 p-2 border border-blue-300 rounded-lg bg-blue-50">
                             <!-- 修正: グラフの式を $y = w2 \times \tanh(w1 \times x + b)$ に変更 -->
-                            <h4 class="text-base font-semibold mb-2 text-blue-700">グラフ2: y = w2 * tanh(w1 * x + b)</h4>
+                            <h3 class="text-base font-semibold mb-2 text-sky-400">グラフ2: <span class="text-gray-800">y = w2 * tanh(w1 * x + b)</span></h3>
 
                             <div class="flex gap-3">
                                 <!-- w1 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
@@ -279,7 +279,7 @@
                                         </div>
                                     </label>
                                     <input type="range" id="a2" min="-10.0" max="10.0" step="0.001" value="1.0"
-                                        class="accent-blue-500">
+                                        class="accent-sky-400">
                                 </div>
 
                                 <!-- b スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
@@ -295,7 +295,7 @@
                                     </label>
                                     <!-- 初期値 0.0 -->
                                     <input type="range" id="b2" min="-10.0" max="10.0" step="0.001" value="0.0"
-                                        class="accent-blue-500">
+                                        class="accent-sky-400">
                                 </div>
 
                                 <!-- w2 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
@@ -305,12 +305,12 @@
                                             <span class="flex-shrink">重み w2:</span>
                                             <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
                                             <input type="number" id="c2-value" min="-10.0" max="10.0" step="0.001"
-                                                value="1.000"
+                                                value="-1.000"
                                                 class="font-bold text-blue-600 w-12 text-right border border-gray-400 p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
                                         </div>
                                     </label>
-                                    <input type="range" id="c2" min="-10.0" max="10.0" step="0.001" value="1.0"
-                                        class="accent-blue-500">
+                                    <input type="range" id="c2" min="-10.0" max="10.0" step="0.001" value="-1.0"
+                                        class="accent-sky-400">
                                 </div>
                             </div>
                         </div>
@@ -333,14 +333,13 @@
 
                         <!-- 目標点設定 (移動・コンパクト化) -->
                         <div
-                            class="target-settings mb-3 p-2 border border-purple-300 rounded-lg bg-white/90 shadow-sm text-xs w-full">
+                            class="target-settings mb-3 p-2 border-none rounded-lg bg-opacity-50 shadow-sm text-xs w-full">
                             <div class="flex items-center">
                                 <label for="target-select"
-                                    class="mr-2 font-medium text-purple-700 whitespace-nowrap">目標点データ:</label>
+                                    class="mr-2 font-medium text-gray-800 whitespace-nowrap">目標点データ:</label>
                                 <select id="target-select"
-                                    class="p-1 border-4 border-indigo-400 rounded text-xs bg-white focus:ring-purple-500 focus:border-purple-500">
-                                    <!-- class="p-1 border border-purple-300 rounded text-xs bg-white focus:ring-purple-500 focus:border-purple-500"> -->
-                                    <option value="0" selected>原点通る直線</option> <!-- 初期選択は「原点通る直線」 -->
+                                    class="p-1 border-4 border-indigo-400 rounded text-xs bg-opacity-50 focus:ring-purple-500 focus:border-purple-500">
+                                    <option value="0" selected>原点通る直線</option>
                                     <option value="1">原点通る折れ線</option>
                                     <option value="2">原点通らない直線</option>
                                     <option value="3">原点通らない折れ線</option>
@@ -355,7 +354,7 @@
 
                         <!-- グラフ範囲設定 (移動・展開) - グラフの下に配置 -->
                         <div
-                            class="range-settings mt-3 p-2 border border-gray-300 rounded-lg bg-white/90 shadow-sm text-xs w-full">
+                            class="range-settings mt-3 p-2 border border-gray-300 rounded-lg bg-opacity-50 shadow-sm text-xs w-full">
                             <!-- ヘッダーとボタンをflexで配置 -->
                             <div class="flex justify-between items-center mb-1">
                                 <h4 class="font-semibold text-gray-700 text-sm m-0">グラフ表示範囲設定</h4>
@@ -422,7 +421,7 @@
                                 <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5"
                                     markerHeight="5" orient="auto-start-reverse">
                                     <!-- 三角形の形状 -->
-                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#7dd3fc" />
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#888888" />
                                 </marker>
                             </defs>
 
@@ -430,27 +429,27 @@
                             <!-- 矢印の線の太さを、ラベルが目立ちやすいように1.0から0.8に微調整 -->
 
                             <!-- 1. 左上 (50, 30) -> 中央上 (150, 30) -->
-                            <line x1="50" y1="30" x2="130.3" y2="26.94" stroke="#7dd3fc" stroke-width="0.8"
+                            <line x1="50" y1="30" x2="130.3" y2="26.94" stroke="#888888" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 2. 左上 (50, 30) -> 中央下 (150, 70) -->
-                            <line x1="50" y1="30" x2="130.3" y2="70.06" stroke="#7dd3fc" stroke-width="0.8"
+                            <line x1="50" y1="30" x2="130.3" y2="70.06" stroke="#888888" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 3. 左下 (50, 70) -> 中央上 (150, 30) -->
-                            <line x1="50" y1="70" x2="130.3" y2="29.94" stroke="#7dd3fc" stroke-width="0.8"
+                            <line x1="50" y1="70" x2="130.3" y2="29.94" stroke="#888888" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 4. 左下 (50, 70) -> 中央下 (150, 70) -->
-                            <line x1="50" y1="70" x2="130.3" y2="74.06" stroke="#7dd3fc" stroke-width="0.8"
+                            <line x1="50" y1="70" x2="130.3" y2="74.06" stroke="#888888" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 5. 中央上 (150, 30) から 右 (250, 50) へ -->
-                            <line x1="150" y1="30" x2="235.3" y2="47.06" stroke="#7dd3fc" stroke-width="0.8"
+                            <line x1="150" y1="30" x2="235.3" y2="47.06" stroke="#888888" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- 6. 中央下 (150, 70) から 右 (250, 50) へ -->
-                            <line x1="150" y1="70" x2="235.3" y2="52.94" stroke="#7dd3fc" stroke-width="0.8"
+                            <line x1="150" y1="70" x2="235.3" y2="52.94" stroke="#888888" stroke-width="0.8"
                                 marker-end="url(#arrowhead)" />
 
                             <!-- ===== ラベル (text) 要素 - 矢印の上 ===== -->
@@ -466,8 +465,8 @@
 
                             <!-- 1. 左の領域 (x=50): 2個の円 -->
                             <!-- 色: 薄い灰色 (#e5e5e5) -->
-                            <circle cx="50" cy="30" r="15" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
-                            <circle cx="50" cy="70" r="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+                            <circle cx="50" cy="30" r="15" fill="#0f172a" stroke="#888888" stroke-width="1.5" />
+                            <circle cx="50" cy="70" r="10" fill="#0f172a" stroke="#888888" stroke-width="1.5" />
 
                             <!-- 2. 中央の領域 (x=150): 2個の円 (R=15) -->
                             <!-- 中央上の円 (薄い赤 R=15) -->
@@ -660,6 +659,7 @@
             const range = getRangeParams();
             const xData = generateXData(range.X_MIN, range.X_MAX);
             const params = getParams();
+console.log(params)
             // 合成グラフのデータ形式をX-Yペアに修正
             const { y1Data, y2Data, ySumData } = generateYData(params, xData);
             const commonOptions = getCommonChartOptions(range);
@@ -680,7 +680,7 @@
                         {
                             label: 'グラフ1 (G1)',
                             data: y1Only, // Y値の配列
-                            borderColor: '#f59e0b',
+                            borderColor: '#f472b6',
                             tension: 0.2,
                             borderWidth: 2,
                             fill: false
