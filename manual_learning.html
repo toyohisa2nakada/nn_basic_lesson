@@ -98,8 +98,8 @@
                 <!-- 右: パラメータ設定エリア (w-1/2) -->
                 <div class="md:w-1/2">
                     <div id="parameter-control"
-                        class="bg-white p-3 rounded-lg shadow-md border border-indigo-200 h-full">
-                        <h3 class="text-base font-bold mb-3 text-indigo-600">パラメータ設定</h3>
+                        class="bg-white p-3 rounded-lg shadow-xl ring-4 ring-offset-2 ring-indigo-400 h-full">
+                        <h3 class="text-base font-bold mb-3 text-indigo-700">パラメータ設定</h3>
 
                         <!-- グラフ1 パラメータ -->
                         <div class="func-params mb-3 p-2 border border-red-300 rounded-lg bg-red-50">
@@ -111,11 +111,11 @@
                                 <div class="w-1/3 pr-1">
                                     <label for="a1" class="text-xs font-medium text-gray-700 block">
                                         <div class="flex items-center whitespace-nowrap">
-                                            <span class="flex-shrink">定数 w1:</span>
+                                            <span class="flex-shrink">重み w1:</span>
                                             <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
                                             <input type="number" id="a1-value" min="-10.0" max="10.0" step="0.001"
                                                 value="1.000"
-                                                class="font-bold text-red-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
+                                                class="font-bold text-red-600 w-12 text-right border border-gray-400 p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
                                         </div>
                                     </label>
                                     <input type="range" id="a1" min="-10.0" max="10.0" step="0.001" value="1.0"
@@ -126,11 +126,11 @@
                                 <div class="w-1/3 pr-1">
                                     <label for="b1" class="text-xs font-medium text-gray-700 block">
                                         <div class="flex items-center whitespace-nowrap">
-                                            <span class="flex-shrink">定数 b:</span>
+                                            <span class="flex-shrink">バイアス b:</span>
                                             <!-- 初期値 0.000 -->
                                             <input type="number" id="b1-value" min="-10.0" max="10.0" step="0.001"
                                                 value="0.000"
-                                                class="font-bold text-red-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
+                                                class="font-bold text-red-600 w-12 text-right border border-gray-400 p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
                                         </div>
                                     </label>
                                     <!-- 初期値 0.0 -->
@@ -142,11 +142,11 @@
                                 <div class="w-1/3 pr-1">
                                     <label for="c1" class="text-xs font-medium text-gray-700 block">
                                         <div class="flex items-center whitespace-nowrap">
-                                            <span class="flex-shrink">定数 w2:</span>
+                                            <span class="flex-shrink">重み w2:</span>
                                             <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
                                             <input type="number" id="c1-value" min="-10.0" max="10.0" step="0.001"
                                                 value="1.000"
-                                                class="font-bold text-red-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
+                                                class="font-bold text-red-600 w-12 text-right border border-gray-400 p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-red-400 rounded">
                                         </div>
                                     </label>
                                     <input type="range" id="c1" min="-10.0" max="10.0" step="0.001" value="1.0"
@@ -165,11 +165,11 @@
                                 <div class="w-1/3 pr-1">
                                     <label for="a2" class="text-xs font-medium text-gray-700 block">
                                         <div class="flex items-center whitespace-nowrap">
-                                            <span class="flex-shrink">定数 w1:</span>
+                                            <span class="flex-shrink">重み w1:</span>
                                             <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
                                             <input type="number" id="a2-value" min="-10.0" max="10.0" step="0.001"
                                                 value="1.000"
-                                                class="font-bold text-blue-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
+                                                class="font-bold text-blue-600 w-12 text-right border border-gray-400 p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
                                         </div>
                                     </label>
                                     <input type="range" id="a2" min="-10.0" max="10.0" step="0.001" value="1.0"
@@ -180,11 +180,11 @@
                                 <div class="w-1/3 pr-1">
                                     <label for="b2" class="text-xs font-medium text-gray-700 block">
                                         <div class="flex items-center whitespace-nowrap">
-                                            <span class="flex-shrink">定数 b:</span>
+                                            <span class="flex-shrink">バイアス b:</span>
                                             <!-- 初期値 0.000 -->
                                             <input type="number" id="b2-value" min="-10.0" max="10.0" step="0.001"
                                                 value="0.000"
-                                                class="font-bold text-blue-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
+                                                class="font-bold text-blue-600 w-12 text-right border border-gray-400 p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
                                         </div>
                                     </label>
                                     <!-- 初期値 0.0 -->
@@ -196,11 +196,11 @@
                                 <div class="w-1/3 pr-1">
                                     <label for="c2" class="text-xs font-medium text-gray-700 block">
                                         <div class="flex items-center whitespace-nowrap">
-                                            <span class="flex-shrink">定数 w2:</span>
+                                            <span class="flex-shrink">重み w2:</span>
                                             <!-- 数値入力エリア (範囲を-10.0〜10.0に拡大) -->
                                             <input type="number" id="c2-value" min="-10.0" max="10.0" step="0.001"
                                                 value="1.000"
-                                                class="font-bold text-blue-600 w-12 text-right border-none p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
+                                                class="font-bold text-blue-600 w-12 text-right border border-gray-400 p-0 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 rounded">
                                         </div>
                                     </label>
                                     <input type="range" id="c2" min="-10.0" max="10.0" step="0.001" value="1.0"
@@ -221,7 +221,7 @@
                         class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
                         <div class="flex items-center justify-between w-full mb-3">
                             <h3 class="text-base font-semibold text-gray-800 m-0">合成グラフ (G1 + G2)</h3>
-                            <div class="text-sm text-gray-700"><span class="font-semibold">MSE:</span> <span
+                            <div class="text-sm text-gray-700"><span class="font-semibold">誤差(MSE):</span> <span
                                     id="mse-value">0.0000</span></div>
                         </div>
 
@@ -232,7 +232,8 @@
                                 <label for="target-select"
                                     class="mr-2 font-medium text-purple-700 whitespace-nowrap">目標点データ:</label>
                                 <select id="target-select"
-                                    class="p-1 border border-purple-300 rounded text-xs bg-white focus:ring-purple-500 focus:border-purple-500">
+                                    class="p-1 border-4 border-indigo-400 rounded text-xs bg-white focus:ring-purple-500 focus:border-purple-500">
+                                    <!-- class="p-1 border border-purple-300 rounded text-xs bg-white focus:ring-purple-500 focus:border-purple-500"> -->
                                     <option value="0" selected>原点通る直線</option> <!-- 初期選択は「原点通る直線」 -->
                                     <option value="1">原点通る折れ線</option>
                                     <option value="2">原点通らない直線</option>
@@ -299,12 +300,13 @@
                 <!-- 右: 図形描画領域 (Placeholder) (w-1/2) -->
                 <div class="md:w-1/2">
                     <div id="drawing-area"
-                        class="relative bg-gray-100 p-4 rounded-lg shadow-inner w-full min-h-[250px] flex flex-col items-center justify-center border border-dashed border-gray-400 space-y-4"
-                        style="padding-bottom: 33.33%;">
-                        <!-- class="bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full min-h-[250px] flex flex-col items-center justify-center border border-dashed border-gray-400"> -->
-                        <!-- <h2 class="text-xl font-semibold text-gray-600">図形描画領域</h2>
-                        <p class="text-sm text-gray-500 mt-2">（現在は空白のプレースホルダーです）</p> -->
-                        <h2>ニューラルネットワークの構造1</h2>
+                        class="relative bg-gray-100 p-4 rounded-lg shadow-inner w-full min-h-[250px] flex flex-col items-center justify-center border border-dashed border-gray-400 space-y-4">
+                        <!-- style="padding-bottom: 33.33%;" -->
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800 m-0">ニューラルネットワークの構造</h2>
+                            <h3 class="text-xs">
+                                入力xに値がセットされ、バイアスには常に1が設定されます。各ニューロンは、その値を使って指定された計算式で値を求め、それらをすべて足し合わせたものが出力yとなります。</h3>
+                        </div>
                         <svg id="circleSvg" viewBox="0 0 300 100" class="inset-0 w-full h-full"
                             xmlns="http://www.w3.org/2000/svg">
 
@@ -373,8 +375,8 @@
                             <circle cx="250" cy="50" r="15" fill="#22c55e" stroke="#15803d" stroke-width="1.5" />
 
                             <!-- ===== ラベル (text) 要素 - 円の中央 ===== -->
-                            <text x="50" y="32" text-anchor="middle" font-size="8" font-weight="bold"
-                                fill="#333">入力</text>
+                            <text x="50" y="32" text-anchor="middle" font-size="8" font-weight="bold" fill="#333">入力
+                                x</text>
                             <text x="50" y="72" text-anchor="middle" font-size="8" font-weight="bold"
                                 fill="#333">バイアス</text>
 
@@ -383,10 +385,14 @@
                             <text x="150" y="77" text-anchor="middle" font-size="8" font-weight="bold" fill="#333">ニューロン
                                 2</text>
 
-                            <text x="250" y="52" text-anchor="middle" font-size="8" font-weight="bold"
-                                fill="#333">出力</text>
+                            <text x="250" y="52" text-anchor="middle" font-size="8" font-weight="bold" fill="#333">出力
+                                y</text>
                         </svg>
-
+                        <div>
+                            <h3 class="text-xs">
+                                AIは、この出力yが教師データと一致するように、自動的に重みwとバイアスの重みbを調整して決定します。なお、このツールの目的は、ユーザーがこれらの重みを直感的に試して手動で求めることです。
+                            </h3>
+                        </div>
                     </div>
                 </div>
             </div>
