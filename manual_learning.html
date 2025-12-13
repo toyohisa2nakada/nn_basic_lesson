@@ -322,7 +322,7 @@
                         class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
                         <!-- 見出しと補助要素を横並び・余白付きでまとめるためのラッパー -->
                         <div class="flex items-center justify-between w-full mb-3">
-                            <h3 class="text-base font-semibold text-gray-800 m-0">個別関数グラフ (G1, G2)</h3>
+                            <h3 class="text-base font-semibold text-gray-800 m-0">個別のグラフ (G1, G2)</h3>
                         </div>
                         <div class="chart-container mx-auto md:mx-0">
                             <canvas id="individual-graphs-canvas"></canvas>
@@ -442,7 +442,7 @@
                         class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
                         <!-- ヘッダーとMSE表示を横並び・余白付きでまとめるためのラッパー -->
                         <div class="flex items-center justify-between w-full mb-3">
-                            <h3 class="text-base font-semibold text-gray-800 m-0">合成グラフ (G1 + G2)</h3>
+                            <h3 class="text-base font-semibold text-gray-800 m-0">グラフの可算結果 (G1 + G2)</h3>
                             <div class="flex items-center gap-3">
                                 <div class="text-sm text-gray-700"><span class="font-semibold">誤差(MSE):</span> <span
                                         id="mse-value">0.0000</span></div>
@@ -726,7 +726,7 @@
                     // 合成関数のLine Chartデータセット
                     datasets: [
                         {
-                            label: '合成グラフ (G1 + G2)',
+                            label: '加算結果 (G1 + G2)',
                             data: ySumData, // {x: X, y: Y} の配列
                             borderColor: '#22c55e',
                             borderWidth: 3,
