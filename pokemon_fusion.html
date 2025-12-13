@@ -1,0 +1,64 @@
+<html>
+
+<body>
+    <div id="content"></div>
+    <script src="https://www.pecode.com/ActiveCamera/libs/opencv.4.12.0.r1.js"></script>
+    <script type="module">
+        const pokemonNames = ["pikachu", "mewtwo"];
+        const pokemonData = [];
+
+        for (let pokemonName of pokemonNames) {
+            const pokemon = await fetch(
+                `https://pokeapi.co/api/v2/pokemon/${pokemonName}`,
+            ).then((r) => r.json());
+            // pokemonData.push(
+            //   ["id", "name", "types", "weight", "height"].reduce(
+            //     (a, e) => ({ ...a, [e]: pokemon[e] }),{}));
+            // pokemonData.push(pokemon)
+            pokemonData.push({
+                id: pokemon.id,
+                name: pokemon.name,
+                types: pokemon.types,
+                weight: pokemon.weight,
+                height: pokemon.height,
+                sprite: pokemon.sprites.front_default,
+            });
+        }
+        document.querySelector("#content").innerHTML +=
+            `元ポケモン<pre>${JSON.stringify(pokemonData, null, 2)}</pre>`;
+
+        const panel = document.createElement("div");
+        document.body.appendChild(panel);
+        pokemonData.forEach((e) => {
+            const imgElem = document.createElement("img");
+            imgElem.crossOrigin = "Anonymous";
+            imgElem.src = e.sprite;
+            imgElem.onload = () => {
+                console.log(e.name);
+                function drawToCanvas() {
+                    const canvas = document.createElement("canvas");
+                    canvas.width = imgElem.width;
+                    canvas.height = imgElem.height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(imgElem, 0, 0);
+                    return canvas;
+                }
+                const src = cv.imread(drawToCanvas());
+                const dst = new cv.Mat();
+
+                cv.resize(src, dst, new cv.Size(16, 16), 0, 0, cv.INTER_AREA);
+                const canvas = document.createElement("canvas");
+                canvas.id = e.name;
+                panel.appendChild(canvas);
+                cv.imshow(e.name, dst);
+                canvas.style.width = `${imgElem.width}px`;
+
+                src.delete();
+                dst.delete();
+            };
+            document.body.insertBefore(imgElem, panel);
+        });
+    </script>
+</body>
+
+</html>
