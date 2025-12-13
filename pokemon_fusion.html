@@ -2,9 +2,12 @@
 
 <body>
     <div id="content"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1"></script>
     <script src="https://www.pecode.com/ActiveCamera/libs/opencv.4.12.0.r1.js"></script>
     <script type="module">
-        const pokemonNames = ["pikachu", "mewtwo"];
+        const pokemonNames = ["pikachu", "Raichu"];
+        const sz = [48, 48];
         const pokemonData = [];
 
         for (let pokemonName of pokemonNames) {
@@ -17,6 +20,7 @@
             // pokemonData.push(pokemon)
             pokemonData.push({
                 id: pokemon.id,
+                queryName: pokemonName,
                 name: pokemon.name,
                 types: pokemon.types,
                 weight: pokemon.weight,
@@ -28,6 +32,11 @@
             `元ポケモン<pre>${JSON.stringify(pokemonData, null, 2)}</pre>`;
 
         const panel = document.createElement("div");
+        pokemonData.forEach((e) => {
+            const canvas = document.createElement("canvas");
+            canvas.id = e.name;
+            panel.appendChild(canvas);
+        });
         document.body.appendChild(panel);
         pokemonData.forEach((e) => {
             const imgElem = document.createElement("img");
@@ -46,18 +55,115 @@
                 const src = cv.imread(drawToCanvas());
                 const dst = new cv.Mat();
 
-                cv.resize(src, dst, new cv.Size(16, 16), 0, 0, cv.INTER_AREA);
-                const canvas = document.createElement("canvas");
-                canvas.id = e.name;
-                panel.appendChild(canvas);
+                cv.resize(src, dst, new cv.Size(...sz), 0, 0, cv.INTER_AREA);
                 cv.imshow(e.name, dst);
-                canvas.style.width = `${imgElem.width}px`;
+                document.querySelector(`#${e.name}`).style.width =
+                    `${imgElem.width}px`;
 
                 src.delete();
                 dst.delete();
             };
             document.body.insertBefore(imgElem, panel);
         });
+
+        const button = document.createElement("button");
+        button.textContent = "学習";
+        button.addEventListener("click", async (e) => {
+            const n = pokemonData.length;
+            const imgArray = [];
+            pokemonData.forEach((e) => {
+                const canvas = document.querySelector(`#${e.name}`);
+                const ctx = canvas.getContext("2d");
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const rgbData = [];
+                for (let i = 0; i < imageData.data.length; i += 4) {
+                    rgbData.push(imageData.data[i + 0] / 255);
+                    rgbData.push(imageData.data[i + 1] / 255);
+                    rgbData.push(imageData.data[i + 2] / 255);
+                }
+                imgArray.push(rgbData);
+            });
+            const tensors = {
+                x: tf.tensor2d([...Array(n).keys()], [n, 1]),
+                y: tf.tensor2d(imgArray, [n, sz[0] * sz[1] * 3]),
+            };
+            console.log(tensors);
+
+            const model = tf.sequential();
+            model.add(
+                tf.layers.dense({
+                    inputShape: [1],
+                    units: 8,
+                    useBias: true,
+                    activation: "tanh",
+                }),
+            );
+            model.add(
+                tf.layers.dense({
+                    units: sz[0] * sz[1] * 3,
+                    useBias: false,
+                }),
+            );
+            model.compile({
+                optimizer: tf.train.adam(0.005),
+                loss: tf.losses.meanSquaredError,
+                metrics: ["mse"],
+            });
+            tfvis.show.modelSummary({ name: "Model Summary" }, model);
+
+            const batchSize = tensors.x.shape[0];
+            const epochs = 400;
+            const history = await model.fit(tensors.x, tensors.y, {
+                batchSize,
+                epochs,
+                shuffle: true,
+                callbacks: tfvis.show.fitCallbacks(
+                    { name: "Training Performance" },
+                    ["mse"],
+                    { height: 100, callbacks: ["onEpochEnd"] },
+                ),
+            });
+
+            const panel = document.createElement("div");
+            const test_x = [...Array(11)].map((_, i) => i * 0.1);
+            console.log(test_x);
+
+            const ref_canvas = document.querySelector(`#${pokemonData[0].name}`);
+            test_x.forEach((e) => {
+                const canvas = document.createElement("canvas");
+                canvas.id = `predicted_${(e * 10).toFixed(0)}`;
+                canvas.width = sz[0];
+                canvas.height = sz[1];
+
+                console.log(ref_canvas.style.width);
+                canvas.style.width = ref_canvas.style.width;
+
+                panel.appendChild(canvas);
+            });
+            document.body.appendChild(panel);
+
+            const test_y = model
+                .predict(tf.tensor2d(test_x, [test_x.length, 1]))
+                .arraySync();
+            test_y.forEach((y, i) => {
+                const canvas = document.querySelector(
+                    `#predicted_${(test_x[i] * 10).toFixed(0)}`,
+                );
+                const ctx = canvas.getContext("2d");
+                const imageData = ctx.createImageData(canvas.width, canvas.height);
+                let rgbIndex = 0;
+                let rgbaIndex = 0;
+                while (rgbIndex < y.length) {
+                    imageData.data[rgbaIndex++] = Math.round(y[rgbIndex++] * 255);
+                    imageData.data[rgbaIndex++] = Math.round(y[rgbIndex++] * 255);
+                    imageData.data[rgbaIndex++] = Math.round(y[rgbIndex++] * 255);
+                    imageData.data[rgbaIndex++] = 255;
+                }
+                console.log(imageData);
+                ctx.putImageData(imageData, 0, 0);
+            });
+        });
+        document.body.appendChild(button);
     </script>
 </body>
 
