@@ -137,8 +137,8 @@
 
         input[type="number"]:focus,
         select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
+            /* border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25); */
             outline: none;
         }
 
@@ -190,27 +190,17 @@
             <!-- === 上部パネル (個別グラフ & パラメータ設定) === -->
             <div id="upper-panel" class="flex flex-col md:flex-row gap-6">
 
-                <!-- 左: 個別関数グラフエリア (w-1/2) -->
-                <div class="md:w-1/2">
-                    <div id="graph-area-top"
-                        class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
-                        <h3 class="text-base font-semibold mb-3 text-gray-800">個別関数グラフ (G1, G2)</h3>
-                        <div class="chart-container mx-auto md:mx-0">
-                            <canvas id="individual-graphs-canvas"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 右: パラメータ設定エリア (w-1/2) -->
+                <!-- 左: パラメータ設定エリア (w-1/2) -->
                 <div class="md:w-1/2">
                     <div id="parameter-control"
                         class="p-3 rounded-lg shadow-xl ring-4 ring-offset-2 ring-indigo-400/30 ring-offset-transparent h-full">
                         <h3 class="text-gray-800 text-base font-bold mb-3">パラメータ設定</h3>
 
                         <!-- グラフ1 パラメータ -->
-                        <div class="func-params mb-3 p-2 border border-red-300 rounded-lg bg-red-50">
+                        <div class="func-params mb-3 p-2 border-8 border-red-300 rounded-lg bg-red-50">
                             <!-- 修正: グラフの式を $y = w2 \times \tanh(w1 \times x + b)$ に変更 -->
-                            <h3 class="text-base font-semibold mb-2 text-pink-400">グラフ1: <span class="text-gray-800">y = w2 * tanh(w1 * x + b)</span></h3>
+                            <h3 class="text-base font-semibold mb-2 text-pink-400">グラフ1: <span class="text-gray-800">y =
+                                    w2 * tanh(w1 * x + b)</span></h3>
 
                             <div class="flex gap-3">
                                 <!-- w1 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
@@ -262,9 +252,10 @@
                         </div>
 
                         <!-- グラフ2 パラメータ -->
-                        <div class="func-params mb-4 p-2 border border-blue-300 rounded-lg bg-blue-50">
+                        <div class="func-params mb-4 p-2 border-8 border-blue-300 rounded-lg bg-blue-50">
                             <!-- 修正: グラフの式を $y = w2 \times \tanh(w1 \times x + b)$ に変更 -->
-                            <h3 class="text-base font-semibold mb-2 text-sky-400">グラフ2: <span class="text-gray-800">y = w2 * tanh(w1 * x + b)</span></h3>
+                            <h3 class="text-base font-semibold mb-2 text-sky-400">グラフ2: <span class="text-gray-800">y =
+                                    w2 * tanh(w1 * x + b)</span></h3>
 
                             <div class="flex gap-3">
                                 <!-- w1 スライダー/数値入力 (範囲を-10.0〜10.0に拡大) -->
@@ -316,93 +307,24 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 右: 個別関数グラフエリア (w-1/2) -->
+                <div class="md:w-1/2">
+                    <div id="graph-area-top"
+                        class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
+                        <h3 class="text-base font-semibold mb-3 text-gray-800">個別関数グラフ (G1, G2)</h3>
+                        <div class="chart-container mx-auto md:mx-0">
+                            <canvas id="individual-graphs-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- === 下部パネル (合成グラフ & 図形描画領域) === -->
             <div id="lower-panel" class="flex flex-col md:flex-row gap-6">
 
-                <!-- 左: 合成グラフエリア (w-1/2) -->
-                <div class="md:w-1/2">
-                    <div id="graph-area-bottom"
-                        class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
-                        <div class="flex items-center justify-between w-full mb-3">
-                            <h3 class="text-base font-semibold text-gray-800 m-0">合成グラフ (G1 + G2)</h3>
-                            <div class="text-sm text-gray-700"><span class="font-semibold">誤差(MSE):</span> <span
-                                    id="mse-value">0.0000</span></div>
-                        </div>
-
-                        <!-- 目標点設定 (移動・コンパクト化) -->
-                        <div
-                            class="target-settings mb-3 p-2 border-none rounded-lg bg-opacity-50 shadow-sm text-xs w-full">
-                            <div class="flex items-center">
-                                <label for="target-select"
-                                    class="mr-2 font-medium text-gray-800 whitespace-nowrap">目標点データ:</label>
-                                <select id="target-select"
-                                    class="p-1 border-4 border-indigo-400 rounded text-xs bg-opacity-50 focus:ring-purple-500 focus:border-purple-500">
-                                    <option value="0" selected>原点通る直線</option>
-                                    <option value="1">原点通る折れ線</option>
-                                    <option value="2">原点通らない直線</option>
-                                    <option value="3">原点通らない折れ線</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- 合成グラフのキャンバス -->
-                        <div class="chart-container mx-auto md:mx-0">
-                            <canvas id="sum-graph-canvas"></canvas>
-                        </div>
-
-                        <!-- グラフ範囲設定 (移動・展開) - グラフの下に配置 -->
-                        <div
-                            class="range-settings mt-3 p-2 border border-gray-300 rounded-lg bg-opacity-50 shadow-sm text-xs w-full">
-                            <!-- ヘッダーとボタンをflexで配置 -->
-                            <div class="flex justify-between items-center mb-1">
-                                <h4 class="font-semibold text-gray-700 text-sm m-0">グラフ表示範囲設定</h4>
-                                <!-- 折りたたみ/展開ボタン -->
-                                <!-- ★変更: 初期状態は閉じている(aria-expanded="false") -->
-                                <button id="toggle-range-settings"
-                                    class="p-1 rounded-full text-gray-600 hover:bg-gray-200 transition"
-                                    aria-expanded="false" aria-controls="range-settings-content">
-                                    <!-- ★変更: viewBoxを修正 -->
-                                    <svg id="toggle-icon"
-                                        class="w-4 h-4 transform rotate-0 transition-transform duration-300" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <!-- 範囲設定のコンテンツ。★変更: 初期状態は非表示 (hiddenクラスを追加) -->
-                            <div id="range-settings-content" class="hidden">
-                                <div class="flex flex-wrap justify-start gap-x-4 gap-y-2">
-
-                                    <!-- X軸範囲 (デフォルト値: -1.5, 2.5) -->
-                                    <div class="flex items-center">
-                                        <span class="mr-1 font-medium">X軸:</span>
-                                        <input type="number" id="x-min" value="-1.5" step="0.5"
-                                            class="range-input text-center border border-gray-300 rounded p-1">
-                                        <span class="mx-1">〜</span>
-                                        <input type="number" id="x-max" value="2.5" step="0.5"
-                                            class="range-input text-center border border-gray-300 rounded p-1">
-                                    </div>
-
-                                    <!-- Y軸範囲 (デフォルト値: -3, 3に変更) -->
-                                    <div class="flex items-center">
-                                        <span class="mr-1 font-medium">Y軸:</span>
-                                        <input type="number" id="y-min" value="-5" step="1"
-                                            class="range-input text-center border border-gray-300 rounded p-1">
-                                        <span class="mx-1">〜</span>
-                                        <input type="number" id="y-max" value="4" step="1"
-                                            class="range-input text-center border border-gray-300 rounded p-1">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 右: 図形描画領域 (Placeholder) (w-1/2) -->
+                <!-- 左: 図形描画領域 (Placeholder) (w-1/2) -->
                 <div class="md:w-1/2">
                     <div id="drawing-area"
                         class="relative bg-gray-100 p-4 rounded-lg shadow-inner w-full min-h-[250px] flex flex-col items-center justify-center border border-dashed border-slate-600 space-y-4">
@@ -485,9 +407,11 @@
                             <text x="50" y="72" text-anchor="middle" font-size="8" font-weight="bold"
                                 fill="#e2e8f0">バイアス</text>
 
-                            <text x="150" y="27" text-anchor="middle" font-size="8" font-weight="bold" fill="#e2e8f0">ニューロン
+                            <text x="150" y="27" text-anchor="middle" font-size="8" font-weight="bold"
+                                fill="#e2e8f0">ニューロン
                                 1</text>
-                            <text x="150" y="77" text-anchor="middle" font-size="8" font-weight="bold" fill="#e2e8f0">ニューロン
+                            <text x="150" y="77" text-anchor="middle" font-size="8" font-weight="bold"
+                                fill="#e2e8f0">ニューロン
                                 2</text>
 
                             <text x="250" y="52" text-anchor="middle" font-size="8" font-weight="bold" fill="#e2e8f0">出力
@@ -500,6 +424,88 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 右: 合成グラフエリア (w-1/2) -->
+                <div class="md:w-1/2">
+                    <div id="graph-area-bottom"
+                        class="flex flex-col items-start justify-start bg-gray-100 p-4 rounded-lg shadow-inner w-full h-full">
+                        <div class="flex items-center justify-between w-full mb-3">
+                            <h3 class="text-base font-semibold text-gray-800 m-0">合成グラフ (G1 + G2)</h3>
+                            <div class="text-sm text-gray-700"><span class="font-semibold">誤差(MSE):</span> <span
+                                    id="mse-value">0.0000</span></div>
+                        </div>
+
+                        <!-- 目標点設定 (移動・コンパクト化) -->
+                        <div
+                            class="target-settings mb-3 p-2 border-none rounded-lg bg-opacity-50 shadow-sm text-xs w-full">
+                            <div class="flex items-center">
+                                <label for="target-select"
+                                    class="mr-2 font-medium text-gray-800 whitespace-nowrap">目標点データ:</label>
+                                <select id="target-select"
+                                    class="p-1 border-8 border-amber-200 rounded text-xs bg-opacity-50 ">
+                                    <option value="0" selected>原点通る直線</option>
+                                    <option value="1">原点通る折れ線</option>
+                                    <option value="2">原点通らない直線</option>
+                                    <option value="3">原点通らない折れ線</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 合成グラフのキャンバス -->
+                        <div class="chart-container mx-auto md:mx-0">
+                            <canvas id="sum-graph-canvas"></canvas>
+                        </div>
+
+                        <!-- グラフ範囲設定 (移動・展開) - グラフの下に配置 -->
+                        <div
+                            class="range-settings mt-3 p-2 border border-gray-300 rounded-lg bg-opacity-50 shadow-sm text-xs w-full">
+                            <!-- ヘッダーとボタンをflexで配置 -->
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-semibold text-gray-700 text-sm m-0">グラフ表示範囲設定</h4>
+                                <!-- 折りたたみ/展開ボタン -->
+                                <!-- ★変更: 初期状態は閉じている(aria-expanded="false") -->
+                                <button id="toggle-range-settings"
+                                    class="p-1 rounded-full text-gray-600 hover:bg-gray-200 transition"
+                                    aria-expanded="false" aria-controls="range-settings-content">
+                                    <!-- ★変更: viewBoxを修正 -->
+                                    <svg id="toggle-icon"
+                                        class="w-4 h-4 transform rotate-0 transition-transform duration-300" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- 範囲設定のコンテンツ。★変更: 初期状態は非表示 (hiddenクラスを追加) -->
+                            <div id="range-settings-content" class="hidden">
+                                <div class="flex flex-wrap justify-start gap-x-4 gap-y-2">
+
+                                    <!-- X軸範囲 (デフォルト値: -1.5, 2.5) -->
+                                    <div class="flex items-center">
+                                        <span class="mr-1 font-medium">X軸:</span>
+                                        <input type="number" id="x-min" value="-1.5" step="0.5"
+                                            class="range-input text-center border border-gray-300 rounded p-1">
+                                        <span class="mx-1">〜</span>
+                                        <input type="number" id="x-max" value="2.5" step="0.5"
+                                            class="range-input text-center border border-gray-300 rounded p-1">
+                                    </div>
+
+                                    <!-- Y軸範囲 (デフォルト値: -3, 3に変更) -->
+                                    <div class="flex items-center">
+                                        <span class="mr-1 font-medium">Y軸:</span>
+                                        <input type="number" id="y-min" value="-5" step="1"
+                                            class="range-input text-center border border-gray-300 rounded p-1">
+                                        <span class="mx-1">〜</span>
+                                        <input type="number" id="y-max" value="4" step="1"
+                                            class="range-input text-center border border-gray-300 rounded p-1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -659,7 +665,7 @@
             const range = getRangeParams();
             const xData = generateXData(range.X_MIN, range.X_MAX);
             const params = getParams();
-console.log(params)
+            console.log(params)
             // 合成グラフのデータ形式をX-Yペアに修正
             const { y1Data, y2Data, ySumData } = generateYData(params, xData);
             const commonOptions = getCommonChartOptions(range);
@@ -723,7 +729,7 @@ console.log(params)
                             backgroundColor: '#facc15', // オレンジ色
                             pointRadius: 7, // 点のサイズ
                             pointBorderWidth: 1,
-                            pointBorderColor: '#0f172a',
+                            // pointBorderColor: '#0f172a',
                             showLine: false, // 線は描画しない
                         }
                     ]
