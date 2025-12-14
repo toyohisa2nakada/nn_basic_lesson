@@ -1,155 +1,224 @@
 <html>
 
-<body>
-    <div id="content"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pokemon fusion (learning leural networks) </title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1"></script>
     <script src="https://www.pecode.com/ActiveCamera/libs/opencv.4.12.0.r1.js"></script>
+</head>
+
+<body class="h-screen flex flex-col">
+    <header class="bg-gray-200 p-2 border-b-2 border-gray-400">
+        <h2 class="text-base font-bold">パラメータ設定</h2>
+        <div class="mt-2 space-y-2">
+
+            <div class="mt-2 flex space-x-4">
+                <div class="flex-1">
+                    <label for="pokemon1" class="block text-sm font-medium text-gray-700">ポケモン1</label>
+                    <input type="text" id="pokemon1" value="pikachu"
+                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="flex-1">
+                    <label for="pokemon2" class="block text-sm font-medium text-gray-700">ポケモン2</label>
+                    <input type="text" id="pokemon2" value="raichu"
+                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="flex-1">
+                    <label for="learning_image_wh"
+                        class="block text-sm font-medium text-gray-700">学習に使う画像のサイズ(w,h)</label>
+                    <input type="text" id="learning_image_wh" value="48,48"
+                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
+                <div class="flex-1">
+                    <label for="config_units" class="block text-sm font-medium text-gray-700">ニューロン数:</label>
+                    <input type="number" id="config_units" value="8" min="1"
+                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+
+                <div class="flex-1">
+                    <label for="config_use_bias" class="block text-sm font-medium text-gray-700">バイアス使用:</label>
+                    <select id="config_use_bias"
+                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                        <option value="true" selected>使用する</option>
+                        <option value="false">使用しない</option>
+                    </select>
+                </div>
+
+                <div class="flex-1">
+                    <label for="config_learning_rate" class="block text-sm font-medium text-gray-700">学習率:</label>
+                    <input type="number" id="config_learning_rate" value="0.005" step="0.001" min="0"
+                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+
+                <div class="flex-1">
+                    <label for="config_epochs" class="block text-sm font-medium text-gray-700">学習回数 (Epochs):</label>
+                    <input type="number" id="config_epochs" value="400" min="1"
+                        class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+            </div>
+
+            <div id="controlPanel" class="pt-2 space-x-4">
+                <button id="queryPokemons"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">ポケモンデータの取得</button>
+                <button id="startLearning"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">学習の開始</button>
+                <button id="startInference"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">推論の実施</button>
+            </div>
+
+        </div>
+    </header>
+    <main class="flex-grow bg-white p-2 overflow-y-auto">
+        <div id="pokemonPanel"></div>
+        <div id="inferencePanel"></div>
+    </main>
     <script type="module">
-        const pokemonNames = ["pikachu", "Raichu"];
-        const sz = [48, 48];
-        const pokemonData = [];
+        let pokemonData = undefined;
+        let model = undefined;
 
-        for (let pokemonName of pokemonNames) {
-            const pokemon = await fetch(
-                `https://pokeapi.co/api/v2/pokemon/${pokemonName}`,
-            ).then((r) => r.json());
-            // pokemonData.push(
-            //   ["id", "name", "types", "weight", "height"].reduce(
-            //     (a, e) => ({ ...a, [e]: pokemon[e] }),{}));
-            // pokemonData.push(pokemon)
-            pokemonData.push({
-                id: pokemon.id,
-                queryName: pokemonName,
-                name: pokemon.name,
-                types: pokemon.types,
-                weight: pokemon.weight,
-                height: pokemon.height,
-                sprite: pokemon.sprites.front_default,
-            });
+        async function getPokemonData(pokemonNames, learningDataSize) {
+            const pokemonData = [];
+            async function getMat(url) {
+                return new Promise((resolve) => {
+                    const imgElem = document.createElement("img");
+                    imgElem.crossOrigin = "Anonymous";
+                    imgElem.src = url;
+                    imgElem.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = imgElem.width;
+                        canvas.height = imgElem.height;
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(imgElem, 0, 0);
+                        const src = cv.imread(canvas);
+                        const dst = new cv.Mat();
+                        cv.resize(src, dst, new cv.Size(...learningDataSize), 0, 0, cv.INTER_AREA);
+                        src.delete();
+                        resolve(dst);
+                    }
+                })
+            }
+            for (let pokemonName of pokemonNames) {
+                const pokemon = await fetch(
+                    `https://pokeapi.co/api/v2/pokemon/${pokemonName}`,
+                ).then((r) => r.json());
+
+                const spriteMat = await getMat(pokemon.sprites.front_default);
+                const canvas = document.createElement('canvas');
+                canvas.id = pokemonName;
+                cv.imshow(canvas, spriteMat);
+                spriteMat.delete();
+
+                pokemonData.push({
+                    id: pokemon.id,
+                    name: pokemon.name,
+                    canvas,
+                });
+            }
+            return pokemonData;
         }
-        document.querySelector("#content").innerHTML +=
-            `元ポケモン<pre>${JSON.stringify(pokemonData, null, 2)}</pre>`;
+        function showPokemonData(pokemonData) {
+            const wrap = document.createElement("div");
+            wrap.className = 'flex justify-around items-center w-full p-2 bg-gray-100';
 
-        const panel = document.createElement("div");
-        pokemonData.forEach((e) => {
-            const canvas = document.createElement("canvas");
-            canvas.id = e.name;
-            panel.appendChild(canvas);
-        });
-        document.body.appendChild(panel);
-        pokemonData.forEach((e) => {
-            const imgElem = document.createElement("img");
-            imgElem.crossOrigin = "Anonymous";
-            imgElem.src = e.sprite;
-            imgElem.onload = () => {
-                console.log(e.name);
-                function drawToCanvas() {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = imgElem.width;
-                    canvas.height = imgElem.height;
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(imgElem, 0, 0);
-                    return canvas;
-                }
-                const src = cv.imread(drawToCanvas());
-                const dst = new cv.Mat();
+            pokemonData.forEach(e => {
+                const panel = document.createElement('div');
+                panel.className = 'rounded-lg flex items-center justify-center ';
+                wrap.appendChild(panel);
 
-                cv.resize(src, dst, new cv.Size(...sz), 0, 0, cv.INTER_AREA);
-                cv.imshow(e.name, dst);
-                document.querySelector(`#${e.name}`).style.width =
-                    `${imgElem.width}px`;
-
-                src.delete();
-                dst.delete();
-            };
-            document.body.insertBefore(imgElem, panel);
-        });
-
-        const button = document.createElement("button");
-        button.textContent = "学習";
-        button.addEventListener("click", async (e) => {
-            const n = pokemonData.length;
-            const imgArray = [];
-            pokemonData.forEach((e) => {
-                const canvas = document.querySelector(`#${e.name}`);
-                const ctx = canvas.getContext("2d");
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const rgbData = [];
-                for (let i = 0; i < imageData.data.length; i += 4) {
-                    rgbData.push(imageData.data[i + 0] / 255);
-                    rgbData.push(imageData.data[i + 1] / 255);
-                    rgbData.push(imageData.data[i + 2] / 255);
-                }
-                imgArray.push(rgbData);
+                const label = document.createElement('div');
+                label.textContent = e.name;
+                panel.appendChild(label);
+                panel.appendChild(e.canvas);
             });
-            const tensors = {
-                x: tf.tensor2d([...Array(n).keys()], [n, 1]),
-                y: tf.tensor2d(imgArray, [n, sz[0] * sz[1] * 3]),
-            };
-            console.log(tensors);
+            return wrap;
+        }
 
-            const model = tf.sequential();
-            model.add(
-                tf.layers.dense({
-                    inputShape: [1],
-                    units: 8,
-                    useBias: true,
-                    activation: "tanh",
-                }),
-            );
-            model.add(
-                tf.layers.dense({
-                    units: sz[0] * sz[1] * 3,
-                    useBias: false,
-                }),
-            );
-            model.compile({
-                optimizer: tf.train.adam(0.005),
-                loss: tf.losses.meanSquaredError,
-                metrics: ["mse"],
-            });
-            tfvis.show.modelSummary({ name: "Model Summary" }, model);
+        async function learn(config) {
+            function getTensor(canvases) {
+                const n = canvases.length;
+                const imgArray = [];
+                canvases.forEach(canvas => {
+                    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const rgbData = [];
+                    for (let i = 0; i < imageData.data.length; i += 4) {
+                        rgbData.push(imageData.data[i + 0] / 255);
+                        rgbData.push(imageData.data[i + 1] / 255);
+                        rgbData.push(imageData.data[i + 2] / 255);
+                    }
+                    imgArray.push(rgbData);
+                });
+                return {
+                    x: tf.tensor2d([...Array(n).keys()], [n, 1]),
+                    y: tf.tensor2d(imgArray, [n, canvases[0].width * canvases[0].height * 3]),
+                };
+            }
+            function buildModel({ outputShape }) {
+                const model = tf.sequential();
+                model.add(
+                    tf.layers.dense({
+                        inputShape: [1],
+                        units: config.units,
+                        useBias: config.useBias,
+                        activation: "tanh",
+                    }),
+                );
+                model.add(
+                    tf.layers.dense({
+                        units: outputShape,
+                        useBias: false,
+                    }),
+                );
+                model.compile({
+                    optimizer: tf.train.adam(config.learningRate),
+                    loss: tf.losses.meanSquaredError,
+                    metrics: ["mse"],
+                });
+                return model;
+            }
+
+            tfvis.visor().close();
+            tfvis.visor().open();
+            const tab = (new Date()).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+            const tensors = getTensor(pokemonData.map(e => e.canvas));
+            const model = buildModel({ outputShape: tensors.y.shape[1] });
+            tfvis.show.modelSummary({ name: `Model Summary ${tab}`, tab }, model);
 
             const batchSize = tensors.x.shape[0];
-            const epochs = 400;
+            const epochs = config.epochs;
             const history = await model.fit(tensors.x, tensors.y, {
                 batchSize,
                 epochs,
                 shuffle: true,
                 callbacks: tfvis.show.fitCallbacks(
-                    { name: "Training Performance" },
+                    { name: `Training Performance ${tab}`, tab },
                     ["mse"],
                     { height: 100, callbacks: ["onEpochEnd"] },
                 ),
             });
+            return model;
+        }
+        function showInferenceResult(test_x, test_y, learningDataSize) {
+            const wrap = document.createElement('div');
+            wrap.className = 'flex justify-around items-center w-full p-2 bg-gray-100';
 
-            const panel = document.createElement("div");
-            const test_x = [...Array(11)].map((_, i) => i * 0.1);
-            console.log(test_x);
-
-            const ref_canvas = document.querySelector(`#${pokemonData[0].name}`);
-            test_x.forEach((e) => {
-                const canvas = document.createElement("canvas");
-                canvas.id = `predicted_${(e * 10).toFixed(0)}`;
-                canvas.width = sz[0];
-                canvas.height = sz[1];
-
-                console.log(ref_canvas.style.width);
-                canvas.style.width = ref_canvas.style.width;
-
-                panel.appendChild(canvas);
-            });
-            document.body.appendChild(panel);
-
-            const test_y = model
-                .predict(tf.tensor2d(test_x, [test_x.length, 1]))
-                .arraySync();
             test_y.forEach((y, i) => {
-                const canvas = document.querySelector(
-                    `#predicted_${(test_x[i] * 10).toFixed(0)}`,
-                );
-                const ctx = canvas.getContext("2d");
+                const panel = document.createElement('div');
+                wrap.appendChild(panel);
+
+                const canvas = document.createElement('canvas');
+                panel.appendChild(canvas);
+                canvas.width = learningDataSize[0];
+                canvas.height = learningDataSize[1];
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
                 const imageData = ctx.createImageData(canvas.width, canvas.height);
                 let rgbIndex = 0;
                 let rgbaIndex = 0;
@@ -159,11 +228,52 @@
                     imageData.data[rgbaIndex++] = Math.round(y[rgbIndex++] * 255);
                     imageData.data[rgbaIndex++] = 255;
                 }
-                console.log(imageData);
                 ctx.putImageData(imageData, 0, 0);
-            });
+
+                const label = document.createElement('div');
+                panel.appendChild(label);
+                label.textContent = test_x[i].toFixed(1);
+            })
+
+            return wrap;
+        }
+
+
+        document.querySelector("#queryPokemons").addEventListener("click", async e => {
+            pokemonData = await getPokemonData(['pokemon1', 'pokemon2'].map(e => document.querySelector(`#${e}`).value),
+                document.querySelector('#learning_image_wh').value.split(',').map(s => Number(s.trim()))
+            );
+
+            const pokemonPanel = document.querySelector("#pokemonPanel");
+            pokemonPanel.innerHTML = '';
+            pokemonPanel.appendChild(showPokemonData(pokemonData));
         });
-        document.body.appendChild(button);
+        document.querySelector("#startLearning").addEventListener("click", async e => {
+            if (pokemonData === undefined) {
+                alert("ポケモンデータを取得してください")
+                return;
+            }
+            const config = {
+                units: parseInt(document.querySelector("#config_units").value, 10),
+                useBias: document.querySelector("#config_use_bias").value === 'true',
+                learningRate: parseFloat(document.querySelector("#config_learning_rate").value, 10),
+                epochs: parseInt(document.querySelector("#config_epochs").value, 10)
+            };
+            model = await learn(config);
+        })
+        document.querySelector("#startInference").addEventListener("click", async e => {
+            if (model === undefined) {
+                alert('まず学習を行ってください。');
+                return;
+            }
+            const test_x = [...Array(11)].map((_, i) => i * 0.1);
+            const test_y = model
+                .predict(tf.tensor2d(test_x, [test_x.length, 1]))
+                .arraySync();
+            const inferencePanel = document.querySelector("#inferencePanel");
+            inferencePanel.innerHTML = '';
+            inferencePanel.appendChild(showInferenceResult(test_x, test_y, [pokemonData[0].canvas.width, pokemonData[0].canvas.height]));
+        });
     </script>
 </body>
 
