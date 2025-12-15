@@ -74,21 +74,6 @@
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
         }
 
-        .func-params {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .func-params:first-of-type {
-            background: var(--bg-accent-red);
-            border-color: rgba(248, 113, 113, 0.35);
-        }
-
-        .func-params:last-of-type {
-            background: var(--bg-accent-blue);
-            border-color: rgba(56, 189, 248, 0.35);
-        }
-
         .target-settings,
         .range-settings {
             background: rgba(17, 24, 39, 0.6);
@@ -197,7 +182,7 @@
                         <h3 class="text-gray-800 text-base font-bold mb-3">パラメータ設定</h3>
 
                         <!-- グラフ1 パラメータ -->
-                        <div class="func-params mb-3 p-2 border-8 border-red-300 rounded-lg bg-red-50">
+                        <div class="mb-3 p-2 border-8 border-red-300 rounded-lg bg-red-400/5">
                             <!-- 修正: グラフの式を $y = w2 \times \tanh(w1 \times x + b)$ に変更 -->
                             <div class="flex items-center justify-between mb-2">
                                 <h3 class="text-base font-semibold text-pink-400">グラフ1: <span class="text-gray-800">y =
@@ -256,7 +241,7 @@
                         </div>
 
                         <!-- グラフ2 パラメータ -->
-                        <div class="func-params mb-4 p-2 border-8 border-blue-300 rounded-lg bg-blue-50">
+                        <div class="mb-4 p-2 border-8 border-blue-300 rounded-lg bg-blue-400/5">
                             <!-- 修正: グラフの式を $y = w2 \times \tanh(w1 \times x + b)$ に変更 -->
                             <div class="flex items-center justify-between mb-2">
                                 <h3 class="text-base font-semibold text-sky-400">グラフ2: <span class="text-gray-800">y =
