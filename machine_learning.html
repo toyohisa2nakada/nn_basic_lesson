@@ -1,5 +1,5 @@
 <html>
-  <!--
+<!--
 参考URL
 https://github.com/tensorflow/tfjs
 https://js.tensorflow.org/api/latest/
@@ -7,224 +7,171 @@ https://js.tensorflow.org/api_vis/latest/
 https://codelabs.developers.google.com/codelabs/tfjs-training-regression/index.html?hl=ja#0
 -->
 
-  <head>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1"></script>
-  </head>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1"></script>
+</head>
 
-  <body>
-    <script>
-      function createModel({ units, useBias, LearningRate }) {
-        const model = tf.sequential();
-        model.add(
-          tf.layers.dense({
-            inputShape: [1],
-            units,
-            useBias,
-            activation: "tanh",
-          }),
-        );
-        model.add(tf.layers.dense({ units: 1, useBias: false }));
-        model.compile({
-          optimizer: tf.train.adam(LearningRate),
-          loss: tf.losses.meanSquaredError,
-          metrics: ["mse"],
-        });
-        return model;
-      }
+<body>
+  <script>
+    async function getDataset(data) {
+      const series = {
+        x: data.map((e) => e[0]),
+        y: data.map((e) => e[1]),
+      };
+      return {
+        values: data.map((e) => ({ x: e[0], y: e[1] })),
+        ranges: {
+          x: [Math.min(...series.x) - 0.5, Math.max(...series.x) + 0.5],
+          y: [Math.min(...series.y) - 2.5, Math.max(...series.y) + 2.5],
+        },
+        tensors: {
+          x: tf.tensor2d(series.x, [data.length, 1]),
+          y: tf.tensor2d(series.y, [data.length, 1]),
+        },
+      };
+    }
+    function setupVisor({ onStart }) {
+      const visorElement = document.querySelector(".visor");
+      visorElement.style.width = "100%";
+      visorElement.style.left = "0";
 
-      async function getData(type) {
-        const data = {
-          原点通る直線: [
-            [-1, -1],
-            [0, 0],
-            [1, 1],
-            [2, 2],
-          ],
-          原点通る折れ線: [
-            [-1, -2],
-            [0, 0],
-            [1, 2],
-            [2, 1],
-          ],
-          原点通らない直線: [
-            [-1, -2],
-            [0, -1],
-            [1, 0],
-            [2, 1],
-          ],
-          原点通らない折れ線: [
-            [-1, -3],
-            [0, -1],
-            [1, 1],
-            [2, 0],
-          ],
-        }[type];
+      [".visor-controls", ".visor-tabs"].forEach((e) => {
+        const elem = visorElement.querySelector(e);
+        elem.style.display = "none";
+      });
 
-        const series = {
-          x: data.map((e) => e[0]),
-          y: data.map((e) => e[1]),
-        };
-        return {
-          values: data.map((e) => ({ x: e[0], y: e[1] })),
-          ranges: {
-            x: [Math.min(...series.x) - 0.5, Math.max(...series.x) + 0.5],
-            y: [Math.min(...series.y) - 2.5, Math.max(...series.y) + 2.5],
-          },
-          tensors: {
-            x: tf.tensor2d(series.x, [data.length, 1]),
-            y: tf.tensor2d(series.y, [data.length, 1]),
-          },
-        };
-      }
-      function setupVisor({ onStart }) {
-        const visorElement = document.querySelector(".visor");
-        visorElement.style.width = "100%";
-        visorElement.style.left = "0";
+      const learningPanelElem = tfvis.visor().surface({ name: "学習開始と学習された重み" });
+      const button = document.createElement("button");
+      button.textContent = "学習";
+      button.addEventListener("click", onStart);
+      learningPanelElem.container.appendChild(button);
 
-        [".visor-controls", ".visor-tabs"].forEach((e) => {
-          const elem = visorElement.querySelector(e);
-          elem.style.display = "none";
-        });
+      function createNeuronPanel(no) {
+        const panel = document.createElement("span");
+        panel.appendChild(Object.assign(document.createElement("span"), { textContent: `n${no + 1}`, }));
+        panel.style.marginLeft = "5px";
+        const wrap = document.createElement("span");
+        panel.appendChild(wrap);
+        wrap.style.border = "1px solid #ccc";
+        wrap.style.marginLeft = "2px";
 
-        const learningPanelElem = tfvis.visor().surface({ name: "学習の制御" });
-        const button = document.createElement("button");
-        button.textContent = "学習開始";
-        button.addEventListener("click", onStart);
-        learningPanelElem.container.appendChild(button);
-
-        function createPanel(no) {
-          const wrap = document.createElement("span");
-          wrap.style.border = "1px solid #ccc";
-
-          function createElem(name) {
-            const span = document.createElement("span");
-            const label = document.createElement("span");
-            span.appendChild(label);
-            label.textContent = name;
-            const text = document.createElement("span");
-            span.appendChild(text);
-            text.textContent = "?";
-            text.id = `learned_${no}_${name}`;
-            text.style.margin = "10px";
-            return span;
-          }
-          wrap.appendChild(createElem("w1"));
-          wrap.appendChild(createElem("b"));
-          wrap.appendChild(createElem("w2"));
-          return wrap;
+        function createElem(name) {
+          const span = document.createElement("span");
+          span.appendChild(Object.assign(document.createElement("span"), { textContent: name }));
+          const text = document.createElement("input");
+          span.appendChild(text);
+          text.type = "number";
+          text.readOnly = true;
+          text.value = "";
+          text.id = `learned_${no}_${name}`;
+          text.style.width = "5em";
+          text.style.border = "none";
+          text.style.outline = "none";
+          text.style.fontSize = "0.8em";
+          text.style.marginLeft = "4px";
+          text.style.padding = "0px";
+          text.style.color = "navy";
+          return span;
         }
-
-        for (let i = 0; i < 2; i += 1) {
-          learningPanelElem.container.appendChild(
-            Object.assign(document.createElement("span"), {
-              textContent: `n${i + 1}`,
-            }),
-          );
-          learningPanelElem.container.appendChild(createPanel(i));
-        }
-      }
-      function updateScatterplot({ values, ranges }) {
-        tfvis.render.scatterplot(
-          { name: "Horsepower v MPG" },
-          { values },
-          { xAxisDomain: ranges.x, yAxisDomain: ranges.y, height: 200 },
-        );
-      }
-      async function transform({ model, range, interval }) {
-        const x = [];
-        for (let i = 0; range[0] + interval * i < range[1]; i += 1) {
-          x.push(parseFloat((range[0] + interval * i).toFixed(10)));
-        }
-        const y = await model.predict(tf.tensor2d(x, [x.length, 1])).data();
-        return x.map((_, i) => ({ x: x[i], y: y[i] }));
+        ["w1", "b", "w2"].forEach(e => {
+          wrap.appendChild(createElem(e));
+        })
+        return panel;
       }
 
-      function updateLearnedParams(params) {
-        for (let i = 0; i < 2; i += 1) {
-          Object.keys(params).forEach((e) => {
-            document.querySelector(`#learned_${i}_${e}`).textContent =
-              params[e][i].toFixed(3);
-          });
-        }
+      for (let i = 0; i < 2; i += 1) {
+        learningPanelElem.container.appendChild(createNeuronPanel(i));
       }
-
-      async function run({ model, values, ranges, tensors, epochs }) {
-        const batchSize = tensors.x.shape[0];
-        // const epochs = 50;
-
-        // // 仮の教師データテンソル（真の値）
-        // const yTrueTensor = tf.tensor(values.map((e) => e.y));
-        // // 予測値をテンソルとして取得
-        // const yPredTensor = model.predict(tensors.x).flatten();
-        // // テンソル演算でMSEを計算
-        // const mseTensor = tf.losses.meanSquaredError(yTrueTensor, yPredTensor);
-        // // 最終的なMSEの値を取得
-        // const tensorMseValue = mseTensor.dataSync()[0];
-        // // メモリ解放
-        // yTrueTensor.dispose();
-        // yPredTensor.dispose();
-        // mseTensor.dispose();
-        // console.log(`テンソル計算MSE: ${tensorMseValue}`);
-
-        const history = await model.fit(tensors.x, tensors.y, {
-          batchSize,
-          epochs,
-          shuffle: true,
-          callbacks: tfvis.show.fitCallbacks(
-            { name: "Training Performance" },
-            ["mse"],
-            { height: 100, callbacks: ["onEpochEnd"] },
-          ),
-        });
-        const finalLoss = history.history.loss[history.history.loss.length - 1];
-        // console.log(history.history.loss)
-        // console.log(`最終エポックの損失値: ${finalLoss}`);
-        // console.log("Done Training");
-
-        // 2ニューロン、バイアスあり、出力1、バイアスなしの場合
-        // weights[0]: 中間層の重み 形状[1,2] 例[[0.1,-0.2]]
-        // weights[1]: 中間層のバイアス 形状[2] 例[-2,1]
-        // weights[2]: 出力層の重み 形状[2,1] 例[[1.2],[-0.1]]
-        const weights = model.getWeights();
-        // for (let i = 0; i < weights.length; i += 1) {
-        //     const arr = await weights[i].array();
-        //     console.log(i,arr)
-        // }
-        // const w1 = weights[0].dataSync();
-        // const b = weights[1].dataSync();
-        // const w2 = weights[2].dataSync();
-        // console.log(w1);
-        // document.querySelector("#learned_w1").textContent = w1[0].toFixed(3);
-        updateLearnedParams({
-          w1: weights[0].dataSync(),
-          b: weights[1].dataSync(),
-          w2: weights[2].dataSync(),
-        });
-        const predicted = await transform({
-          model,
-          range: ranges.x,
-          interval: 0.1,
-        });
-        updateScatterplot({ values: [values, predicted], ranges });
+    }
+    function updateScatterplot({ values, ranges }) {
+      tfvis.render.scatterplot(
+        { name: "ニューラルネットワークの出力値と教師データ" },
+        { values, series:["出力値","教師データ"] },
+        { xAxisDomain: ranges.x, yAxisDomain: ranges.y, height: 200, width: 550 },
+      );
+    }
+    async function transform({ model, range, interval }) {
+      const x = [];
+      for (let i = 0; range[0] + interval * i < range[1]; i += 1) {
+        x.push(parseFloat((range[0] + interval * i).toFixed(10)));
       }
+      const y = await model.predict(tf.tensor2d(x, [x.length, 1])).data();
+      return x.map((_, i) => ({ x: x[i], y: y[i] }));
+    }
 
-      async function setup() {
-        const { values, ranges, tensors } = await getData("原点通らない折れ線");
-        updateScatterplot({ values, ranges });
-
-        const model = createModel({
-          units: 2,
-          useBias: true,
-          LearningRate: 0.05,
-        });
-        // tfvis.show.modelSummary({ name: "Model Summary" }, model);
-
-        setupVisor({
-          onStart: () => run({ epochs: 50, model, values, ranges, tensors }),
+    function updateLearnedParams(params) {
+      for (let i = 0; i < 2; i += 1) {
+        Object.keys(params).forEach((e) => {
+          document.querySelector(`#learned_${i}_${e}`).value = parseFloat(params[e][i].toFixed(3));
         });
       }
-      document.addEventListener("DOMContentLoaded", setup);
-    </script>
-  </body>
+    }
+
+    function createModel({ units, useBias, LearningRate }) {
+      const model = tf.sequential();
+      model.add(
+        tf.layers.dense({
+          inputShape: [1],
+          units,
+          useBias,
+          activation: "tanh",
+        }),
+      );
+      model.add(tf.layers.dense({ units: 1, useBias: false }));
+      model.compile({
+        optimizer: tf.train.adam(LearningRate),
+        loss: tf.losses.meanSquaredError,
+        metrics: ["mse"],
+      });
+      return model;
+    }
+    async function run({ model, values, ranges, tensors, epochs }) {
+      const history = await model.fit(tensors.x, tensors.y, {
+        batchSize: tensors.x.shape[0],
+        epochs,
+        shuffle: true,
+        callbacks: tfvis.show.fitCallbacks(
+          { name: "学習回数と誤差(MSE)" },
+          ["mse"],
+          { height: 100, callbacks: ["onEpochEnd"] },
+        ),
+      });
+      const finalLoss = history.history.loss[history.history.loss.length - 1];
+
+      // 2ニューロン、バイアスあり、出力1、バイアスなしの場合
+      // weights[0]: 中間層の重み 形状[1,2] 例[[0.1,-0.2]]
+      // weights[1]: 中間層のバイアス 形状[2] 例[-2,1]
+      // weights[2]: 出力層の重み 形状[2,1] 例[[1.2],[-0.1]]
+      const weights = model.getWeights();
+      updateLearnedParams({ w1: weights[0].dataSync(), b: weights[1].dataSync(), w2: weights[2].dataSync(), });
+      const predicted = await transform({ model, range: ranges.x, interval: 0.1, });
+      updateScatterplot({ values: [predicted, values], ranges });
+    }
+
+    async function setup() {
+      const data = {
+        "原点通る直線": [[-1, -1], [0, 0], [1, 1], [2, 2],],
+        "原点通る折れ線": [[-1, -2], [0, 0], [1, 2], [2, 1],],
+        "原点通らない直線": [[-1, -2], [0, -1], [1, 0], [2, 1],],
+        "原点通らない折れ線": [[-1, -3], [0, -1], [1, 1], [2, 0],],
+      };
+      const { values, ranges, tensors } = await getDataset(data["原点通らない折れ線"]);
+      updateScatterplot({ values: [[], values], ranges });
+
+      const model = createModel({
+        units: 2,
+        useBias: true,
+        LearningRate: 0.05,
+      });
+      // tfvis.show.modelSummary({ name: "Model Summary" }, model);
+
+      setupVisor({
+        onStart: () => run({ epochs: 50, model, values, ranges, tensors }),
+      });
+    }
+    document.addEventListener("DOMContentLoaded", setup);
+  </script>
+</body>
+
 </html>
