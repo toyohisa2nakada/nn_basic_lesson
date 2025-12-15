@@ -21,6 +21,9 @@ tfvis.show.modelSummary({ name: "Model Summary" }, model);
 */
 
 async function getDataset(data) {
+  if (data === undefined) {
+    return {};
+  }
   const series = {
     x: data.map((e) => e[0]),
     y: data.map((e) => e[1]),
@@ -53,6 +56,29 @@ function setupVisor({ onStart }) {
   button.addEventListener("click", onStart);
   learningPanelElem.container.appendChild(button);
 
+  function createCompactNumberCss() {
+    const style = document.createElement("style");
+    style.textContent = `
+      .compact-number {
+        color: navy;
+        margin: 0 4px;
+        font-size: 0.7em;
+        width: 5ch;
+        box-sizing: border-box;
+        border: none;
+        outline: none;
+        padding: 0;
+        appearance: textfield;
+      }
+      .compact-number::-webkit-inner-spin-button,
+      .compact-number::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function createNeuronPanel(no) {
     const panel = document.createElement("span");
     panel.appendChild(Object.assign(document.createElement("span"), { textContent: `n${no + 1}`, }));
@@ -69,15 +95,20 @@ function setupVisor({ onStart }) {
       span.appendChild(text);
       text.type = "number";
       text.readOnly = true;
-      text.value = "";
       text.id = `learned_${no}_${name}`;
-      text.style.width = "5em";
-      text.style.border = "none";
-      text.style.outline = "none";
-      text.style.fontSize = "0.8em";
-      text.style.marginLeft = "4px";
-      text.style.padding = "0px";
-      text.style.color = "navy";
+      // text.value = "";
+      // text.style.width = "5ch";
+      // text.style.boxSizing = "border-box"
+      // text.style.border = "none";
+      // text.style.outline = "none";
+      // text.style.fontSize = "0.8em";
+      // text.style.marginLeft = "4px";
+      // text.style.padding = "0px";
+      // text.style.color = "navy";
+      // text.style.appearance = "textfield";
+      // text.style.webkitAppearance = "textfield";
+      // text.style.mozAppearance = "textfield";
+      text.classList.add("compact-number");
       return span;
     }
     ["w1", "b", "w2"].forEach(e => {
@@ -86,6 +117,7 @@ function setupVisor({ onStart }) {
     return panel;
   }
 
+  createCompactNumberCss();
   for (let i = 0; i < 2; i += 1) {
     learningPanelElem.container.appendChild(createNeuronPanel(i));
   }
@@ -94,7 +126,7 @@ function updateScatterplot({ values, ranges }) {
   tfvis.render.scatterplot(
     { name: "ニューラルネットワークの出力値と教師データ" },
     { values, series: ["出力値", "教師データ"] },
-    { xAxisDomain: ranges.x, yAxisDomain: ranges.y, height: 200, width: 550 },
+    { xAxisDomain: ranges.x, yAxisDomain: ranges.y, height: 200, width: 450 },
   );
 }
 async function transform({ model, range, interval }) {

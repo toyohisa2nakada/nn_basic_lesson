@@ -58,7 +58,7 @@
 
                 <div class="flex-1">
                     <label for="config_epochs" class="block text-sm font-medium text-gray-700">学習回数 (Epochs):</label>
-                    <input type="number" id="config_epochs" value="400" min="1"
+                    <input type="number" id="config_epochs" value="50" min="1"
                         class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
                 </div>
             </div>
@@ -67,7 +67,7 @@
                 <button id="queryPokemons"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">ポケモンデータの取得</button>
                 <button id="startLearning"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">学習の開始</button>
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400 disabled:text-gray-200 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-gray-400">学習</button>
                 <button id="startInference"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">推論の実施</button>
             </div>
@@ -139,7 +139,7 @@
             return wrap;
         }
 
-        async function learn(config) {
+        async function learn(config, baseModel) {
             function getTensor(canvases) {
                 const n = canvases.length;
                 const imgArray = [];
@@ -188,7 +188,7 @@
             const tab = (new Date()).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 
             const tensors = getTensor(pokemonData.map(e => e.canvas));
-            const model = buildModel({ outputShape: tensors.y.shape[1] });
+            const model = baseModel ?? buildModel({ outputShape: tensors.y.shape[1] });
             tfvis.show.modelSummary({ name: `Model Summary ${tab}`, tab }, model);
 
             const batchSize = tensors.x.shape[0];
@@ -240,10 +240,10 @@
 
 
         document.querySelector("#queryPokemons").addEventListener("click", async e => {
+            model = undefined;
             pokemonData = await getPokemonData(['pokemon1', 'pokemon2'].map(e => document.querySelector(`#${e}`).value),
                 document.querySelector('#learning_image_wh').value.split(',').map(s => Number(s.trim()))
             );
-
             const pokemonPanel = document.querySelector("#pokemonPanel");
             pokemonPanel.innerHTML = '';
             pokemonPanel.appendChild(showPokemonData(pokemonData));
@@ -253,13 +253,15 @@
                 alert("ポケモンデータを取得してください")
                 return;
             }
+            document.querySelector("#startLearning").disabled = true;
             const config = {
                 units: parseInt(document.querySelector("#config_units").value, 10),
                 useBias: document.querySelector("#config_use_bias").value === 'true',
                 learningRate: parseFloat(document.querySelector("#config_learning_rate").value, 10),
                 epochs: parseInt(document.querySelector("#config_epochs").value, 10)
             };
-            model = await learn(config);
+            model = await learn(config, model);
+            document.querySelector("#startLearning").disabled = false;
         })
         document.querySelector("#startInference").addEventListener("click", async e => {
             if (model === undefined) {
