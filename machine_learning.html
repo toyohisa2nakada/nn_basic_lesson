@@ -10,6 +10,7 @@ https://codelabs.developers.google.com/codelabs/tfjs-training-regression/index.h
 <head>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1"></script>
+  <script src="https://toyohisa2nakada.github.io/nn_basic_lesson/machine_learning_internal.js"></script>
 </head>
 
 <body>
@@ -139,10 +140,6 @@ https://codelabs.developers.google.com/codelabs/tfjs-training-regression/index.h
       });
       const finalLoss = history.history.loss[history.history.loss.length - 1];
 
-      // 2ニューロン、バイアスあり、出力1、バイアスなしの場合
-      // weights[0]: 中間層の重み 形状[1,2] 例[[0.1,-0.2]]
-      // weights[1]: 中間層のバイアス 形状[2] 例[-2,1]
-      // weights[2]: 出力層の重み 形状[2,1] 例[[1.2],[-0.1]]
       const weights = model.getWeights();
       updateLearnedParams({ w1: weights[0].dataSync(), b: weights[1].dataSync(), w2: weights[2].dataSync(), });
       const predicted = await transform({ model, range: ranges.x, interval: 0.1, });
@@ -164,7 +161,6 @@ https://codelabs.developers.google.com/codelabs/tfjs-training-regression/index.h
         useBias: true,
         LearningRate: 0.05,
       });
-      // tfvis.show.modelSummary({ name: "Model Summary" }, model);
 
       setupVisor({
         onStart: () => run({ epochs: 50, model, values, ranges, tensors }),
