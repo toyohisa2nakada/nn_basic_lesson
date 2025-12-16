@@ -69,7 +69,7 @@
                 <button id="startLearning"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400 disabled:text-gray-200 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-gray-400">学習</button>
                 <button id="startInference"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">推論の実施</button>
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">推論の実行</button>
             </div>
 
         </div>
@@ -260,6 +260,10 @@
                 learningRate: parseFloat(document.querySelector("#config_learning_rate").value, 10),
                 epochs: parseInt(document.querySelector("#config_epochs").value, 10)
             };
+            if (model?.layers[0].units !== config.units || model?.layers[0].useBias !== config.useBias) {
+                console.log("reset model")
+                model = undefined;
+            }
             model = await learn(config, model);
             document.querySelector("#startLearning").disabled = false;
         })

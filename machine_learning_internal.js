@@ -40,6 +40,51 @@ async function getDataset(data) {
     },
   };
 }
+function createModel({ units, useBias, LearningRate }) {
+  const model = tf.sequential();
+  model.add(
+    tf.layers.dense({
+      inputShape: [1],
+      units,
+      useBias,
+      activation: "tanh",
+    }),
+  );
+  model.add(tf.layers.dense({ units: 1, useBias: false }));
+  model.compile({
+    optimizer: tf.train.adam(LearningRate),
+    loss: tf.losses.meanSquaredError,
+    metrics: ["mse"],
+  });
+  return model;
+}
+async function learn({ model, values, ranges, tensors, epochs }) {
+  const history = await model.fit(tensors.x, tensors.y, {
+    batchSize: tensors.x.shape[0],
+    epochs,
+    shuffle: true,
+    callbacks: tfvis.show.fitCallbacks(
+      { name: "学習回数と誤差(MSE)" },
+      ["mse"],
+      { height: 100, callbacks: ["onEpochEnd"] },
+    ),
+  });
+  // console.log(model.layers[0].getWeights())
+  // console.log(model.layers[1].getWeights())
+  const weights = model.getWeights();
+  // console.log(weights)
+  updateLearnedParams({
+    w1: model.layers[0].getWeights()[0].dataSync(),
+    b: model.layers[0].getWeights()[1]?.dataSync(),
+    w2: model.layers[1].getWeights()[0].dataSync(),
+  });
+  const predicted = await transform({
+    model,
+    range: ranges.x,
+    interval: 0.1,
+  });
+  updateScatterplot({ values: [predicted, values], ranges });
+}
 function setupVisor({ onStart }) {
   const visorElement = document.querySelector(".visor");
   visorElement.style.width = "100%";
@@ -96,18 +141,6 @@ function setupVisor({ onStart }) {
       text.type = "number";
       text.readOnly = true;
       text.id = `learned_${no}_${name}`;
-      // text.value = "";
-      // text.style.width = "5ch";
-      // text.style.boxSizing = "border-box"
-      // text.style.border = "none";
-      // text.style.outline = "none";
-      // text.style.fontSize = "0.8em";
-      // text.style.marginLeft = "4px";
-      // text.style.padding = "0px";
-      // text.style.color = "navy";
-      // text.style.appearance = "textfield";
-      // text.style.webkitAppearance = "textfield";
-      // text.style.mozAppearance = "textfield";
       text.classList.add("compact-number");
       return span;
     }
@@ -139,9 +172,12 @@ async function transform({ model, range, interval }) {
 }
 
 function updateLearnedParams(params) {
-  for (let i = 0; i < 2; i += 1) {
+  console.log(params)
+  for (let i = 0; i < params.w1.length; i += 1) {
     Object.keys(params).forEach((e) => {
-      document.querySelector(`#learned_${i}_${e}`).value = parseFloat(params[e][i].toFixed(3));
+      if (params[e] !== undefined) {
+        document.querySelector(`#learned_${i}_${e}`).value = parseFloat(params[e][i].toFixed(3));
+      }
     });
   }
 }

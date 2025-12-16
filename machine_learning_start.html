@@ -9,27 +9,24 @@
 <body>
   <script>
     async function setup() {
-      const data = {
-        "原点通る直線": [[-1, -1], [0, 0], [1, 1], [2, 2],],
-        "原点通る折れ線": [[-1, -2], [0, 0], [1, 2], [2, 1],],
-        "原点通らない直線": [[-1, -2], [0, -1], [1, 0], [2, 1],],
-        "原点通らない折れ線": [[-1, -3], [0, -1], [1, 1], [2, 0],],
-      };
+      // 🚨1 以下の1行を消してFormのプログラムを貼り付ける
+      const data = undefined;
+
       if (data === undefined) {
         document.body.appendChild(Object.assign(document.createElement("h1"), { textContent: "データがありません", }),);
         return;
       }
 
       const { values, ranges, tensors } = await getDataset(
-        data?.["原点通らない折れ線"],
+        // 🚨2 原点通らない折れ線 に変更する
+        data?.["原点通る直線"],
       );
       values !== undefined &&
         updateScatterplot({ values: [[], values], ranges });
-      const model = createModel({
-        units: 2,
-        useBias: true,
-        LearningRate: 0.05,
-      });
+
+      // 🚨3 以下の1行を消してFormのプログラムを貼り付ける
+      const model = undefined;
+      
       model !== undefined && setupVisor({
         onStart: () => learn({ epochs: 50, model, values, ranges, tensors }),
       });
