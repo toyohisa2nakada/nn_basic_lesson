@@ -26,9 +26,7 @@
       // 🚨3 以下の1行を消してFormのプログラムを貼り付ける
       const model = undefined;
 
-      model !== undefined && setupVisor({
-        onStart: () => learn({ epochs: 50, model, values, ranges, tensors }),
-      });
+      model !== undefined && setupVisor({ onStart: async () => await learn({ epochs: 50, model, values, ranges, tensors }), });
     }
     document.addEventListener("DOMContentLoaded", setup);
   </script>

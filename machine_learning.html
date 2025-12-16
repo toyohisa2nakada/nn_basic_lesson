@@ -23,18 +23,14 @@
       const { values, ranges, tensors } = await getDataset(
         data?.["原点通らない折れ線"],
       );
-      values !== undefined &&
-        updateScatterplot({ values: [[], values], ranges });
+      values !== undefined && updateScatterplot({ values: [[], values], ranges });
       const model = createModel({
         units: 2,
         useBias: true,
         LearningRate: 0.05,
       });
-      model !== undefined && setupVisor({
-        onStart: () => learn({ epochs: 50, model, values, ranges, tensors }),
-      });
+      model !== undefined && setupVisor({ onStart: async () => await learn({ epochs: 50, model, values, ranges, tensors }), });
     }
-    
     document.addEventListener("DOMContentLoaded", setup);
   </script>
 </body>

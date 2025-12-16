@@ -1,4 +1,10 @@
 /*
+学習のために分離したこのファイルは、github pagesを通して読み込まれる。
+ただデバッグ用としてローカルから読み込む場合は、scriptタブを以下のにする。
+<script src="https://localhost/iU/講義関連/システム設計演習/課題検討/ニューラルネットワークの計算方法/app/machine_learning_internal.js"></script>
+*/
+
+/*
 参考URL
 https://github.com/tensorflow/tfjs
 https://js.tensorflow.org/api/latest/
@@ -99,7 +105,12 @@ function setupVisor({ onStart }) {
   const learningPanelElem = tfvis.visor().surface({ name: "学習開始と学習された重み" });
   const button = document.createElement("button");
   button.textContent = "学習";
-  button.addEventListener("click", onStart);
+  button.id = "startLearning"
+  button.addEventListener("click", async e => {
+    button.disabled = true;
+    await onStart();
+    button.disabled = false;
+  });
   learningPanelElem.container.appendChild(button);
 
   function createCompactNumberCss() {
