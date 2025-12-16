@@ -20,6 +20,7 @@ weights[2]: 出力層の重み 形状[2,1] 例[[1.2],[-0.1]]
 tfvis.show.modelSummary({ name: "Model Summary" }, model);
 */
 
+
 async function getDataset(data) {
   if (data === undefined) {
     return {};
