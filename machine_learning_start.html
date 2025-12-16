@@ -21,12 +21,11 @@
         // 🚨2 原点通らない折れ線 に変更する
         data?.["原点通る直線"],
       );
-      values !== undefined &&
-        updateScatterplot({ values: [[], values], ranges });
+      values !== undefined && updateScatterplot({ values: [[], values], ranges });
 
       // 🚨3 以下の1行を消してFormのプログラムを貼り付ける
       const model = undefined;
-      
+
       model !== undefined && setupVisor({
         onStart: () => learn({ epochs: 50, model, values, ranges, tensors }),
       });
