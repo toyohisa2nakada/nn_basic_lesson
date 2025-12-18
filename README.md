@@ -1,5 +1,5 @@
-[machine learning](https://toyohisa2nakada.github.io/nn_basic_lesson/machine_learning.html)
+[machine learning](https://nn_basic_lesson.pecode.com/machine_learning.html)
 
-[manual_learning](https://toyohisa2nakada.github.io/nn_basic_lesson/manual_learning.html)
+[manual_learning](https://nn_basic_lesson.pecode.com/manual_learning.html)
 
-[pokemon_fusion](https://toyohisa2nakada.github.io/nn_basic_lesson/pokemon_fusion.html)
+[pokemon_fusion](https://nn_basic_lesson.pecode.com/pokemon_fusion.html)
