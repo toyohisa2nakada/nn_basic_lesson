@@ -76,10 +76,7 @@ async function learn({ model, values, ranges, tensors, epochs }) {
       { height: 100, callbacks: ["onEpochEnd"] },
     ),
   });
-  // console.log(model.layers[0].getWeights())
-  // console.log(model.layers[1].getWeights())
   const weights = model.getWeights();
-  // console.log(weights)
   updateLearnedParams({
     w1: model.layers[0].getWeights()[0].dataSync(),
     b: model.layers[0].getWeights()[1]?.dataSync(),
@@ -185,7 +182,6 @@ async function transform({ model, range, interval }) {
 }
 
 function updateLearnedParams(params) {
-  console.log(params)
   for (let i = 0; i < params.w1.length; i += 1) {
     Object.keys(params).forEach((e) => {
       if (params[e] !== undefined) {
