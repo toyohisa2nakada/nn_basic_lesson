@@ -37,13 +37,13 @@
             <div class="flex space-x-4">
                 <div class="flex-1">
                     <label for="config_units" class="block text-sm font-medium text-gray-700">ニューロン数:</label>
-                    <input type="number" id="config_units" value="8" min="1"
+                    <input type="number" id="config_units" data-nn-config value="8" min="1"
                         class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
                 </div>
 
                 <div class="flex-1">
                     <label for="config_use_bias" class="block text-sm font-medium text-gray-700">バイアス使用:</label>
-                    <select id="config_use_bias"
+                    <select id="config_use_bias" data-nn-config
                         class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
                         <option value="true" selected>使用する</option>
                         <option value="false">使用しない</option>
@@ -52,13 +52,13 @@
 
                 <div class="flex-1">
                     <label for="config_learning_rate" class="block text-sm font-medium text-gray-700">学習率:</label>
-                    <input type="number" id="config_learning_rate" value="0.005" step="0.001" min="0"
+                    <input type="number" id="config_learning_rate" data-nn-config value="0.005" step="0.001" min="0"
                         class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
                 </div>
 
                 <div class="flex-1">
                     <label for="config_epochs" class="block text-sm font-medium text-gray-700">学習回数 (Epochs):</label>
-                    <input type="number" id="config_epochs" value="50" min="1"
+                    <input type="number" id="config_epochs" data-nn-config value="50" min="1"
                         class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
                 </div>
             </div>
@@ -81,6 +81,7 @@
     <script type="module">
         let pokemonData = undefined;
         let model = undefined;
+        let config = undefined;
 
         async function getPokemonData(pokemonNames, learningDataSize) {
             const pokemonData = [];
@@ -234,13 +235,23 @@
                 panel.appendChild(label);
                 label.textContent = test_x[i].toFixed(1);
             })
-
             return wrap;
         }
 
-
+        function updateConfig() {
+            const nextConfig = {
+                units: Number(document.querySelector("#config_units").value),
+                useBias: document.querySelector("#config_use_bias").value === "true",
+                learningRate: Number(document.querySelector("#config_learning_rate").value),
+                epochs: Number(document.querySelector("#config_epochs").value),
+            };
+            const changed = !config || Object.keys(nextConfig).some(key => config[key] !== nextConfig[key]);
+            config = nextConfig;
+            return changed;
+        }
         document.querySelector("#queryPokemons").addEventListener("click", async e => {
             model = undefined;
+            document.querySelector("#startLearning").textContent = "学習";
             pokemonData = await getPokemonData(['pokemon1', 'pokemon2'].map(e => document.querySelector(`#${e}`).value),
                 document.querySelector('#learning_image_wh').value.split(',').map(s => Number(s.trim()))
             );
@@ -248,23 +259,26 @@
             pokemonPanel.innerHTML = '';
             pokemonPanel.appendChild(showPokemonData(pokemonData));
         });
+        document.querySelectorAll("[data-nn-config]").forEach(e => {
+            const onConfigChanged = () => {
+                if (updateConfig()) {
+                    console.log("reset model");
+                    model = undefined;
+                    document.querySelector("#startLearning").textContent = "学習";
+                }
+            }
+            e.addEventListener("input", onConfigChanged);
+            e.addEventListener("change", onConfigChanged);
+        })
         document.querySelector("#startLearning").addEventListener("click", async e => {
             if (pokemonData === undefined) {
                 alert("ポケモンデータを取得してください")
                 return;
             }
             document.querySelector("#startLearning").disabled = true;
-            const config = {
-                units: parseInt(document.querySelector("#config_units").value, 10),
-                useBias: document.querySelector("#config_use_bias").value === 'true',
-                learningRate: parseFloat(document.querySelector("#config_learning_rate").value, 10),
-                epochs: parseInt(document.querySelector("#config_epochs").value, 10)
-            };
-            if (model?.layers[0].units !== config.units || model?.layers[0].useBias !== config.useBias) {
-                console.log("reset model")
-                model = undefined;
-            }
+            updateConfig();
             model = await learn(config, model);
+            document.querySelector("#startLearning").textContent = "追加学習";
             document.querySelector("#startLearning").disabled = false;
         })
         document.querySelector("#startInference").addEventListener("click", async e => {
