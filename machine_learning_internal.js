@@ -109,6 +109,7 @@ function setupVisor({ onStart }) {
   button.addEventListener("click", async e => {
     button.disabled = true;
     await onStart();
+    button.textContent = "追加学習";
     button.disabled = false;
   });
   learningPanelElem.container.appendChild(button);
